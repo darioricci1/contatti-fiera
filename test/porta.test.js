@@ -1,11 +1,11 @@
 // contatti-fiera/test/porta.test.js
-// version: 0.2.0
+// version: 0.3.0
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chi, ammessoDaVariabili } from "../lib/porta.js";
 import { firma, NOME_COOKIE } from "../lib/sessione.js";
 
-const env = { SESSIONE_SEGRETO: "un-segreto-di-prova-lungo", FIERA_CODICE: "alma-1", FIERA_AMMINISTRATORI: "capo@x.it" };
+const env = { SESSIONE_SEGRETO: "un-segreto-di-prova-lungo", FIERA_AMMINISTRATORI: "capo@x.it" };
 
 test("cookie Google valido", async () => {
   const t = await firma({ e: "capo@x.it", n: "Capo" }, env.SESSIONE_SEGRETO);
@@ -13,9 +13,9 @@ test("cookie Google valido", async () => {
   assert.deepEqual(io, { email: "capo@x.it", nome: "Capo", admin: true, via: "google" });
 });
 
-test("cookie falso, codice giusto, niente", async () => {
+test("cookie falso, il vecchio codice, niente", async () => {
   assert.equal(await chi({ headers: { cookie: `${NOME_COOKIE}=v1.abc.def` } }, env), null);
-  assert.equal((await chi({ headers: { "x-codice": "ALMA-1" } }, env)).via, "codice");
+  assert.equal(await chi({ headers: { "x-codice": "alma-6969" } }, { ...env, FIERA_CODICE: "alma-6969" }), null);
   assert.equal(await chi({ headers: {} }, env), null);
 });
 

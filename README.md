@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.4.0 -->
+<!-- version: 0.5.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -9,8 +9,12 @@ Si controllano i campi, si salva, e il contatto arriva alla lista comune
 della squadra. «Scarica Excel» rifà il file con le stesse colonne.
 
 Si apre su https://contatti-fiera.vercel.app dal telefono (si può aggiungere
-alla schermata Home). Al primo accesso chiede il codice della squadra, il
-proprio nome e il nome della fiera.
+alla schermata Home). Si entra con Google: gli amministratori
+(`FIERA_AMMINISTRATORI`), gli indirizzi di `FIERA_AMMESSI`, tutti quelli dei
+domini di `FIERA_DOMINI` (almasicurezza.it) e chi l'amministratore aggiunge in
+Impostazioni → «Chi può entrare con Google». Il nome della fiera si cambia in
+Impostazioni. La data del contatto è quella del giorno in cui si salva;
+«Scarica Excel» salva prima il contatto compilato e non ancora salvato.
 
 ## Come si detta
 
@@ -43,7 +47,7 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
   schema si crea o si aggiorna da solo alla prima chiamata.
 - `api/entra.js`, `api/ammessi.js`, `lib/google-id.js`, `lib/sessione.js`,
   `public/porta.js`: l'accesso con Google, copiato da `attrezzi/accesso-google`.
-- `api/stato.js`: cosa è acceso (database, IA, Google, codice) e chi è entrato.
+- `api/stato.js`: cosa è acceso (database, IA, Google) e chi è entrato.
 - Senza rete la pagina si apre lo stesso (`sw.js`) e i contatti salvati
   restano sul telefono con «da inviare»; partono appena torna il segnale.
 
@@ -56,7 +60,6 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
 - `FIERA_AMMINISTRATORI`: gli indirizzi di chi gestisce la squadra.
 - `FIERA_DOMINI`: i domini che entrano tutti (`almasicurezza.it`).
 - `FIERA_AMMESSI`: altri indirizzi che entrano sempre.
-- `FIERA_CODICE`: il codice della squadra, l'ingresso di riserva.
 - `ALMA_DATABASE_URL` (e le altre `ALMA_*`): dall'integrazione Neon di Alma.
 - `ANTHROPIC_API_KEY` (facoltativa): accende l'IA e la foto del biglietto.
   `FIERA_MODELLO` cambia il modello (predefinito `claude-haiku-5-5`).

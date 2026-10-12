@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.4.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.5.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -76,8 +76,6 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 #entra{--porta-sfondo:var(--carta);--porta-testo:var(--blu);--porta-piano:var(--tenue)}
 #entra .porta{min-height:0;padding:8px 0 4px}
 #entra .porta-scheda h2{font-size:18px}
-#conCodice{margin-top:14px;border-top:1px solid var(--bordo);padding-top:10px}
-#conCodice summary{cursor:pointer;color:var(--tenue);font-size:14px}
 .ammessi li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bordo);font-size:14px;overflow-wrap:anywhere}
 .nascosto{display:none!important}
 .versione{font-size:12px;color:var(--tenue);text-align:center;margin-top:10px}
@@ -92,14 +90,6 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <main>
   <section class="carta nascosto" id="entra">
     <div id="portaGoogle"></div>
-    <details id="conCodice">
-      <summary>Entra con il codice della squadra</summary>
-      <label for="inCodice">Codice della squadra</label>
-      <input id="inCodice" autocomplete="off" autocapitalize="none" spellcheck="false">
-      <label for="inChi">Il tuo nome</label>
-      <input id="inChi" autocomplete="name">
-      <div class="riga" style="margin-top:14px"><button class="pieno" id="btEntra">Entra</button></div>
-    </details>
     <div class="stato" id="statoEntra"></div>
   </section>
 
@@ -159,7 +149,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         </div>
       </div>
       <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button> <span class="aiuto" id="chiSono"></span></div>
-      <div class="versione" id="versione">versione 0.4.0</div>
+      <div class="versione" id="versione">versione 0.5.0</div>
     </section>
   </div>
 </main>
@@ -183,12 +173,13 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.4.0";
+const VERSIONE = "0.5.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
 
-let codice = leggi("codice", ""), chi = leggi("chi", ""), fiera = leggi("fiera", "");
+let chi = leggi("chi", ""), fiera = leggi("fiera", "");
+try { localStorage.removeItem("cf.codice"); } catch {}
 let contatti = leggi("contatti", []);   // l'ultima lista vista dal server
 let coda = leggi("coda", []);           // salvati qui e non ancora arrivati
 let cancellati = leggi("cancellati", []);
@@ -201,7 +192,7 @@ const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
   "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
 
 async function api(percorso, opz = {}) {
-  const r = await fetch(percorso, { ...opz, headers: { "content-type": "application/json", "x-codice": codice, ...(opz.headers || {}) } });
+  const r = await fetch(percorso, { ...opz, headers: { "content-type": "application/json", ...(opz.headers || {}) } });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(j.errore || `errore ${r.status}`); e.stato = r.status; throw e; }
   return j;
@@ -210,28 +201,12 @@ async function api(percorso, opz = {}) {
 function avviso(testo, tipo = "") { const s = $("#stato"); s.textContent = testo; s.className = "stato " + tipo; }
 
 // ---------- Entrare ----------
-// Con Google (cookie messo da /api/entra) o, di riserva, con il codice della squadra.
+// Con Google: il cookie lo mette /api/entra.
 const fieraDiOggi = () => `Fiera ${new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
-
-async function entraConCodice() {
-  const c = $("#inCodice").value.trim(), n = $("#inChi").value.trim();
-  if (!c || !n) { $("#statoEntra").textContent = "Servono codice e nome."; return; }
-  $("#statoEntra").textContent = "Controllo…";
-  codice = c;
-  try {
-    const s = await api("api/stato");
-    if (!s.entrato) { codice = ""; $("#statoEntra").textContent = "Codice sbagliato."; $("#statoEntra").className = "stato err"; return; }
-    servizio = s;
-  } catch {
-    // Senza rete si entra lo stesso: il codice si controlla al primo invio.
-  }
-  chi = n; scrivi("codice", codice); scrivi("chi", chi);
-  avvia();
-}
 
 function mostraEntra(motivo = "") {
   $("#entra").classList.remove("nascosto"); $("#app").classList.add("nascosto"); $("#piede").classList.add("nascosto");
-  $("#inChi").value = chi; $("#statoEntra").textContent = motivo; $("#statoEntra").className = "stato" + (motivo ? " err" : "");
+  $("#statoEntra").textContent = motivo; $("#statoEntra").className = "stato" + (motivo ? " err" : "");
   const porta = $("#portaGoogle");
   if (servizio.google && window.portaGoogle) {
     window.portaGoogle(porta, {
@@ -245,10 +220,8 @@ function mostraEntra(motivo = "") {
       },
       dopo: () => avvia(),
     });
-    $("#conCodice").open = false;
   } else {
-    porta.innerHTML = '<h2>Entra nella squadra</h2><p class="aiuto" style="text-align:left">Il codice lo ha Dario. Il nome serve a sapere chi era allo stand.</p>';
-    $("#conCodice").open = true;
+    porta.innerHTML = '<h2>Contatti fiera</h2><p class="aiuto" style="text-align:left">L\'accesso con Google non è disponibile in questo momento: ricarica la pagina tra poco.</p>';
   }
   document.body.classList.remove("in-porta");
 }
@@ -262,12 +235,12 @@ async function avvia() {
   try {
     const s = await api("api/stato");
     servizio = s;
-    if (!s.entrato) { codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null); return mostraEntra("L'accesso è scaduto: rientra."); }
+    if (!s.entrato) { utente = null; scrivi("utente", null); return mostraEntra("L'accesso è scaduto: rientra."); }
     utente = s.utente; scrivi("utente", utente);
     if (utente.via === "google" && utente.nome) { chi = utente.nome; scrivi("chi", chi); $("#setChi").value = chi; }
   } catch {}
   $("#setChi").disabled = utente && utente.via === "google";
-  $("#chiSono").textContent = utente && utente.via === "google" ? `Sei entrato come ${utente.email}` : "Sei entrato con il codice";
+  $("#chiSono").textContent = utente && utente.via === "google" ? `Sei entrato come ${utente.email}` : "";
   $("#btFoto").classList.toggle("nascosto", !servizio.ia);
   $("#versione").textContent = `versione ${VERSIONE}` + (servizio.ia ? " · IA attiva" : " · riconoscimento sul telefono");
   $("#zonaAmmessi").classList.toggle("nascosto", !(utente && utente.admin));
@@ -452,7 +425,7 @@ function salva() {
 
 let inViaggio = false;
 async function sincronizza() {
-  if (inViaggio || !codice) return; inViaggio = true;
+  if (inViaggio || !utente) return; inViaggio = true;
   try {
     if (coda.length) {
       const pacco = coda.slice();
@@ -468,7 +441,7 @@ async function sincronizza() {
     contatti = l; scrivi("contatti", contatti);
     rete(true);
   } catch (e) {
-    if (e.stato === 401) { codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null); mostraEntra("L'accesso è scaduto: rientra."); }
+    if (e.stato === 401) { utente = null; scrivi("utente", null); mostraEntra("L'accesso è scaduto: rientra."); }
     else rete(navigator.onLine && !(e instanceof TypeError));
   } finally { inViaggio = false; disegna(); }
 }
@@ -563,22 +536,20 @@ $("#btExcel").addEventListener("click", async () => {
 $("#setChi").addEventListener("change", () => { chi = $("#setChi").value.trim(); scrivi("chi", chi); });
 $("#setFiera").addEventListener("change", () => { fiera = $("#setFiera").value.trim(); scrivi("fiera", fiera); $("#titoloFiera").textContent = fiera ? "· " + fiera : ""; });
 $("#btEsci").addEventListener("click", async () => {
-  codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null);
+  utente = null; scrivi("utente", null);
   try { await fetch("api/entra", { method: "DELETE" }); } catch {}
   mostraEntra();
 });
-$("#btEntra").addEventListener("click", entraConCodice);
-$("#inCodice").addEventListener("keydown", (e) => { if (e.key === "Enter") entraConCodice(); });
 
 rete(navigator.onLine);
-// All'apertura: chi e' gia' entrato (cookie o codice) va dritto ai contatti; senza rete pure.
+// All'apertura: chi e' gia' entrato (cookie) va dritto ai contatti; senza rete pure.
 (async () => {
   try {
     servizio = await api("api/stato");
     if (servizio.entrato) { utente = servizio.utente; return avvia(); }
     mostraEntra();
   } catch {
-    if ((codice && chi) || utente) avvia(); else mostraEntra("Serve la rete per entrare la prima volta.");
+    if (utente) avvia(); else mostraEntra("Serve la rete per entrare la prima volta.");
   }
 })();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
