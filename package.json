@@ -1,0 +1,13 @@
+{
+  "name": "contatti-fiera",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Contatti fiera di Alma Sicurezza: si parla, la pagina compila il foglio dei contatti e lo condivide con la squadra.",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0"
+  }
+}

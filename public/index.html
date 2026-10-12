@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="it">
+<head>
+<!-- contatti-fiera/public/index.html · version: 0.1.0 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f3d5e">
+<title>Contatti fiera</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icona.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icona.svg">
+<style>
+:root{
+  --sfondo:#f3f5f8;--carta:#fff;--testo:#16202b;--tenue:#5c6b7a;--bordo:#d6dde5;
+  --blu:#0f3d5e;--blu2:#1d6fa5;--rosso:#c62828;--verde:#2e7d32;--giallo:#fff4d6;--giallo-b:#e8c66b;
+  --ombra:0 1px 3px rgba(16,32,48,.08),0 4px 14px rgba(16,32,48,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --sfondo:#0e141b;--carta:#17212b;--testo:#e6edf3;--tenue:#9aa9b8;--bordo:#2a3846;
+  --blu:#7cc0f0;--blu2:#5aa8e0;--rosso:#ef6b6b;--verde:#6cc070;--giallo:#3a3320;--giallo-b:#7d6a2c;
+  --ombra:none;}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--sfondo);color:var(--testo);
+  font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+header{position:sticky;top:0;z-index:5;background:var(--blu);color:#fff;padding:10px 16px calc(10px);
+  padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:#0b2a40}}
+header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header small{opacity:.85;font-size:13px}
+.rete{font-size:12px;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
+.rete.no{background:#b23b3b}
+main{max-width:720px;margin:0 auto;padding:14px 16px 90px}
+.carta{background:var(--carta);border:1px solid var(--bordo);border-radius:14px;box-shadow:var(--ombra);padding:16px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 10px}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--bordo);background:var(--carta);color:var(--testo);
+  padding:10px 14px;min-height:44px}
+button.pieno{background:var(--blu2);border-color:var(--blu2);color:#fff;font-weight:600}
+button:disabled{opacity:.5;cursor:default}
+.riga{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.mic-zona{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0 10px}
+#mic{width:112px;height:112px;border-radius:50%;border:none;background:var(--rosso);color:#fff;font-size:15px;font-weight:700;
+  box-shadow:0 6px 18px rgba(198,40,40,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+#mic svg{width:38px;height:38px}
+#mic.va{animation:pulsa 1.2s infinite}
+@keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(198,40,40,.55)}70%{box-shadow:0 0 0 22px rgba(198,40,40,0)}100%{box-shadow:0 0 0 0 rgba(198,40,40,0)}}
+.aiuto{font-size:13px;color:var(--tenue);text-align:center;max-width:46ch}
+textarea,input,select{font:inherit;color:var(--testo);background:var(--carta);border:1px solid var(--bordo);border-radius:10px;
+  padding:10px 12px;width:100%;min-height:44px}
+textarea{min-height:92px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-offset:0;border-color:transparent}
+.campi{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:12px}
+.campi label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--tenue);min-width:0}
+.campi label.largo{grid-column:1/-1}
+.campi input.ia{background:var(--giallo);border-color:var(--giallo-b)}
+@media (max-width:340px){.campi{grid-template-columns:1fr}}
+.stato{font-size:13px;color:var(--tenue);min-height:18px;margin-top:8px}
+.stato.err{color:var(--rosso)}
+.stato.ok{color:var(--verde)}
+.lista{list-style:none;margin:0;padding:0}
+.lista li{border-top:1px solid var(--bordo);padding:10px 2px;display:flex;gap:10px;align-items:flex-start}
+.lista li:first-child{border-top:none}
+.lista .chi{flex:1;min-width:0}
+.lista b{display:block}
+.lista span{font-size:13px;color:var(--tenue);display:block;overflow-wrap:anywhere}
+.lista .piccolo{min-height:36px;padding:6px 10px;font-size:13px}
+.coda{font-size:11px;background:var(--giallo);border:1px solid var(--giallo-b);border-radius:99px;padding:1px 7px;margin-left:6px;color:var(--testo)}
+.cerca{margin-bottom:8px}
+.piede{position:fixed;left:0;right:0;bottom:0;background:var(--carta);border-top:1px solid var(--bordo);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center;z-index:5}
+.piede button{flex:1;max-width:340px}
+#entra{max-width:420px;margin:40px auto}
+#entra label{display:block;margin:12px 0 4px;font-size:14px;color:var(--tenue)}
+.nascosto{display:none!important}
+.versione{font-size:12px;color:var(--tenue);text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Contatti fiera <small id="titoloFiera"></small></h1>
+  <span class="rete" id="rete">in linea</span>
+</header>
+
+<main>
+  <section class="carta nascosto" id="entra">
+    <h2>Entra nella squadra</h2>
+    <p class="aiuto" style="text-align:left">Il codice lo ha Dario. Il nome serve a sapere chi era allo stand.</p>
+    <label for="inCodice">Codice della squadra</label>
+    <input id="inCodice" autocomplete="off" autocapitalize="none" spellcheck="false">
+    <label for="inChi">Il tuo nome</label>
+    <input id="inChi" autocomplete="name">
+    <label for="inFiera">Fiera</label>
+    <input id="inFiera" placeholder="es. Fiera ottobre 2026">
+    <div class="riga" style="margin-top:14px"><button class="pieno" id="btEntra">Entra</button></div>
+    <div class="stato" id="statoEntra"></div>
+  </section>
+
+  <div id="app" class="nascosto">
+    <section class="carta">
+      <h2 id="titoloScheda">Nuovo contatto</h2>
+      <div class="mic-zona">
+        <button id="mic" aria-label="Registra">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+          <span id="micTesto">Parla</span>
+        </button>
+        <div class="aiuto" id="micAiuto">Tocca e di' il contatto, per esempio: «Carlo De Vitis, vice comandante, comune di Fara San Martino, email carlo punto devitis chiocciola fsm punto it, telefono 333 313 2729, interessato alla Multi Video Trappola». Tocca di nuovo per finire.</div>
+      </div>
+      <textarea id="testo" placeholder="Qui compare quello che dici. Puoi anche scrivere o usare il microfono della tastiera."></textarea>
+      <div class="riga" style="margin-top:8px">
+        <button id="btCompila">Compila dal testo</button>
+        <button id="btFoto" class="nascosto">Foto biglietto</button>
+        <input type="file" id="inFoto" accept="image/*" capture="environment" class="nascosto">
+      </div>
+      <div class="campi" id="campi">
+        <label>Data contatto<input type="date" data-k="data"></label>
+        <label>Ruolo<input data-k="ruolo" list="ruoli"></label>
+        <label>Nome<input data-k="nome" autocapitalize="words"></label>
+        <label>Cognome<input data-k="cognome" autocapitalize="words"></label>
+        <label>Comune<input data-k="comune" list="comuni" autocapitalize="words"></label>
+        <label>Provincia<input data-k="provincia" maxlength="2" autocapitalize="characters"></label>
+        <label>Email<input data-k="email" type="email" autocapitalize="none" spellcheck="false"></label>
+        <label>Telefono<input data-k="telefono" type="tel"></label>
+        <label class="largo">Interesse<input data-k="interesse" list="interessi"></label>
+        <label class="largo">Note<input data-k="note"></label>
+      </div>
+      <div class="riga" style="margin-top:12px">
+        <button class="pieno" id="btSalva">Salva contatto</button>
+        <button id="btNuovo">Svuota</button>
+      </div>
+      <div class="stato" id="stato"></div>
+    </section>
+
+    <section class="carta">
+      <h2 id="titoloLista">Contatti</h2>
+      <input class="cerca" id="cerca" type="search" placeholder="Cerca per nome, comune, interesse…">
+      <ul class="lista" id="lista"></ul>
+    </section>
+
+    <section class="carta">
+      <h2>Impostazioni</h2>
+      <div class="campi" style="margin-top:0">
+        <label>Il tuo nome<input id="setChi"></label>
+        <label>Fiera<input id="setFiera"></label>
+      </div>
+      <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button></div>
+      <div class="versione" id="versione">versione 0.1.0</div>
+    </section>
+  </div>
+</main>
+
+<div class="piede nascosto" id="piede">
+  <button class="pieno" id="btExcel">Scarica Excel</button>
+</div>
+
+<datalist id="ruoli">
+  <option>Comandante</option><option>Vice comandante</option><option>Commissario</option><option>Ispettore</option>
+  <option>Sovrintendente</option><option>Assistente</option><option>Agente</option><option>Sindaco</option>
+  <option>Vice sindaco</option><option>Assessore</option><option>Segretario comunale</option><option>Responsabile</option>
+  <option>Dirigente</option><option>Funzionario</option><option>Tecnico</option>
+</datalist>
+<datalist id="interessi">
+  <option>Multi Video Trappola</option><option>Easy</option><option>Videosorveglianza cittadina</option>
+  <option>Lettura targhe</option><option>Fototrappole</option>
+</datalist>
+<datalist id="comuni"></datalist>
+
+<script type="module">
+import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono } from "./estrai.js";
+
+const VERSIONE = "0.1.0";
+const $ = (s) => document.querySelector(s);
+const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
+const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
+
+let codice = leggi("codice", ""), chi = leggi("chi", ""), fiera = leggi("fiera", "");
+let contatti = leggi("contatti", []);   // l'ultima lista vista dal server
+let coda = leggi("coda", []);           // salvati qui e non ancora arrivati
+let cancellati = leggi("cancellati", []);
+let servizio = { ia: false, database: false };
+let corrente = null;                    // id della scheda aperta
+let toccati = new Set();                // campi scritti a mano: l'IA non li sovrascrive
+
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() :
+  "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)));
+
+async function api(percorso, opz = {}) {
+  const r = await fetch(percorso, { ...opz, headers: { "content-type": "application/json", "x-codice": codice, ...(opz.headers || {}) } });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.errore || `errore ${r.status}`); e.stato = r.status; throw e; }
+  return j;
+}
+
+function avviso(testo, tipo = "") { const s = $("#stato"); s.textContent = testo; s.className = "stato " + tipo; }
+
+// ---------- Entrare ----------
+async function entra() {
+  const c = $("#inCodice").value.trim(), n = $("#inChi").value.trim();
+  if (!c || !n) { $("#statoEntra").textContent = "Servono codice e nome."; return; }
+  $("#statoEntra").textContent = "Controllo…";
+  codice = c;
+  try {
+    const s = await api("api/stato");
+    if (!s.entrato) { $("#statoEntra").textContent = "Codice sbagliato."; $("#statoEntra").className = "stato err"; return; }
+    servizio = s;
+  } catch {
+    // Senza rete si entra lo stesso: il codice si controlla al primo invio.
+  }
+  chi = n; fiera = $("#inFiera").value.trim();
+  scrivi("codice", codice); scrivi("chi", chi); scrivi("fiera", fiera);
+  avvia();
+}
+
+function mostraEntra() {
+  $("#entra").classList.remove("nascosto"); $("#app").classList.add("nascosto"); $("#piede").classList.add("nascosto");
+  $("#inChi").value = chi; $("#inFiera").value = fiera || `Fiera ${new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
+}
+
+async function avvia() {
+  $("#entra").classList.add("nascosto"); $("#app").classList.remove("nascosto"); $("#piede").classList.remove("nascosto");
+  $("#setChi").value = chi; $("#setFiera").value = fiera; $("#titoloFiera").textContent = fiera ? "· " + fiera : "";
+  nuovo(); disegna();
+  try {
+    const s = await api("api/stato");
+    servizio = s;
+    if (!s.entrato) { codice = ""; scrivi("codice", ""); mostraEntra(); $("#statoEntra").textContent = "Il codice è cambiato: rimettilo."; return; }
+  } catch {}
+  $("#btFoto").classList.toggle("nascosto", !servizio.ia);
+  $("#versione").textContent = `versione ${VERSIONE}` + (servizio.ia ? " · IA attiva" : " · riconoscimento sul telefono");
+  sincronizza();
+}
+
+// ---------- Comuni (per il riconoscitore e la tendina) ----------
+fetch("comuni.json").then((r) => r.json()).then((l) => {
+  caricaComuni(l);
+  window.__comuni = new Map(l.map(([n, s]) => [n.toLowerCase(), s]));
+  const dl = $("#comuni"); const f = document.createDocumentFragment();
+  for (const [n] of l) { const o = document.createElement("option"); o.value = n; f.append(o); }
+  dl.append(f);
+}).catch(() => {});
+
+// ---------- Microfono ----------
+const Riconosci = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, registra = false, baseTesto = "";
+if (!Riconosci) {
+  $("#micAiuto").textContent = "Questo browser non ascolta da solo: tocca il riquadro qui sotto e usa il microfono della tastiera, poi «Compila dal testo».";
+  $("#mic").addEventListener("click", () => $("#testo").focus());
+} else {
+  $("#mic").addEventListener("click", () => (registra ? ferma() : parti()));
+}
+
+function parti() {
+  registra = true; baseTesto = $("#testo").value.trim();
+  $("#mic").classList.add("va"); $("#micTesto").textContent = "Fine";
+  avviso("Ti ascolto…");
+  ascolta();
+}
+function ascolta() {
+  // Una frase alla volta e si riparte: su Android la modalità continua ripete le parole.
+  rec = new Riconosci();
+  rec.lang = "it-IT"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+  rec.onresult = (e) => {
+    let fisso = "", provvisorio = "";
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) fisso += e.results[i][0].transcript; else provvisorio += e.results[i][0].transcript;
+    }
+    $("#testo").value = [baseTesto, fisso, provvisorio].filter(Boolean).join(" ").replace(/\s+/g, " ");
+    if (fisso) baseTesto = [baseTesto, fisso].filter(Boolean).join(" ").replace(/\s+/g, " ");
+    if (fisso) compilaLocale();
+  };
+  rec.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+      registra = false; finito();
+      avviso("Il microfono è bloccato: consentilo nelle impostazioni del browser, o usa il microfono della tastiera.", "err");
+    } else if (e.error === "network") {
+      registra = false; finito();
+      avviso("Senza rete il browser non trascrive: usa il microfono della tastiera, funziona anche offline.", "err");
+    }
+  };
+  rec.onend = () => { if (registra) { try { ascolta(); } catch { registra = false; finito(); } } else finito(); };
+  try { rec.start(); } catch {}
+}
+function ferma() { registra = false; try { rec && rec.stop(); } catch {} }
+function finito() {
+  $("#mic").classList.remove("va"); $("#micTesto").textContent = "Parla";
+  if ($("#testo").value.trim()) compila(); else avviso("");
+}
+
+// ---------- Compilare ----------
+const campo = (k) => document.querySelector(`[data-k="${k}"]`);
+function leggiScheda() { const o = {}; for (const el of document.querySelectorAll("[data-k]")) o[el.dataset.k] = el.value.trim(); return o; }
+function riempi(o, { daIA = false } = {}) {
+  for (const [k, v] of Object.entries(o)) {
+    const el = campo(k); if (!el || toccati.has(k)) continue;
+    if (!v && el.value) continue; // un campo gia' pieno non si svuota da solo
+    if (el.value !== (v || "")) { el.value = v || ""; el.classList.toggle("ia", daIA && !!v); }
+  }
+}
+function compilaLocale() {
+  const r = estrai($("#testo").value, { data: campo("data").value || undefined });
+  riempi(r);
+  return r;
+}
+let giroIA = 0;
+async function compila() {
+  const bozza = compilaLocale();
+  if (!servizio.ia || !navigator.onLine) { avviso("Controlla i campi e salva."); return; }
+  const mio = ++giroIA;
+  avviso("L'IA ricontrolla i campi…");
+  try {
+    const { campi } = await api("api/estrai", { method: "POST", body: JSON.stringify({ testo: $("#testo").value, bozza }) });
+    if (mio !== giroIA) return;
+    riempi(campi, { daIA: true });
+    avviso("Compilato. In giallo quello che ha corretto l'IA: controlla e salva.", "ok");
+  } catch (e) { if (mio === giroIA) avviso("IA non raggiungibile, ho compilato dal telefono: controlla e salva."); }
+}
+$("#btCompila").addEventListener("click", compila);
+for (const el of document.querySelectorAll("[data-k]")) {
+  el.addEventListener("input", () => { toccati.add(el.dataset.k); el.classList.remove("ia"); });
+}
+campo("comune").addEventListener("change", () => {
+  const s = window.__comuni && window.__comuni.get(campo("comune").value.trim().toLowerCase());
+  if (s && !toccati.has("provincia")) campo("provincia").value = s;
+});
+campo("telefono").addEventListener("blur", () => {
+  const c = campo("telefono").value.replace(/\D/g, ""); if (c.length >= 8) campo("telefono").value = formattaTelefono(c);
+});
+
+// ---------- Foto del biglietto ----------
+$("#btFoto").addEventListener("click", () => $("#inFoto").click());
+$("#inFoto").addEventListener("change", async () => {
+  const f = $("#inFoto").files[0]; if (!f) return;
+  avviso("Leggo la foto…");
+  try {
+    const immagine = await rimpicciolisci(f, 1600);
+    const { campi } = await api("api/estrai", { method: "POST", body: JSON.stringify({ immagine, testo: $("#testo").value, bozza: leggiScheda() }) });
+    riempi(campi, { daIA: true });
+    avviso("Letto dalla foto: controlla e salva.", "ok");
+  } catch (e) { avviso("Non sono riuscito a leggere la foto: " + e.message, "err"); }
+  $("#inFoto").value = "";
+});
+function rimpicciolisci(file, lato) {
+  return new Promise((ok, ko) => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, lato / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      ok(c.toDataURL("image/jpeg", 0.82));
+    };
+    img.onerror = () => ko(new Error("immagine non leggibile")); img.src = url;
+  });
+}
+
+// ---------- Salvare ----------
+function nuovo() {
+  corrente = null; toccati = new Set(); giroIA++;
+  for (const el of document.querySelectorAll("[data-k]")) { el.value = ""; el.classList.remove("ia"); }
+  const d = new Date(); campo("data").value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  $("#testo").value = ""; $("#titoloScheda").textContent = "Nuovo contatto"; $("#btSalva").textContent = "Salva contatto";
+}
+$("#btNuovo").addEventListener("click", () => { nuovo(); avviso(""); });
+
+$("#btSalva").addEventListener("click", () => {
+  if (registra) ferma();
+  const s = leggiScheda();
+  if (!s.nome && !s.cognome && !s.email && !s.telefono) { avviso("Manca almeno un nome, un'email o un telefono.", "err"); return; }
+  const vecchio = corrente && tutti().find((c) => c.id === corrente);
+  const c = { ...(vecchio || {}), ...s, id: corrente || uuid(), fiera: (vecchio && vecchio.fiera) || fiera,
+    registrato_da: (vecchio && vecchio.registrato_da) || chi, trascrizione: $("#testo").value.trim() || (vecchio && vecchio.trascrizione) || "" };
+  coda = coda.filter((x) => x.id !== c.id).concat([c]); scrivi("coda", coda);
+  const nome = [c.nome, c.cognome].filter(Boolean).join(" ") || c.email;
+  nuovo(); disegna();
+  avviso(`Salvato: ${nome}.` + (navigator.onLine ? "" : " Lo mando appena torna la rete."), "ok");
+  sincronizza();
+});
+
+let inViaggio = false;
+async function sincronizza() {
+  if (inViaggio || !codice) return; inViaggio = true;
+  try {
+    if (coda.length) {
+      const pacco = coda.slice();
+      await api("api/contatti", { method: "POST", body: JSON.stringify({ contatti: pacco }) });
+      const mandati = new Set(pacco.map((c) => c.id));
+      coda = coda.filter((c) => !mandati.has(c.id) || pacco.find((p) => p.id === c.id) !== c); scrivi("coda", coda);
+    }
+    for (const id of cancellati.slice()) {
+      await api("api/contatti?id=" + encodeURIComponent(id), { method: "DELETE" });
+      cancellati = cancellati.filter((x) => x !== id); scrivi("cancellati", cancellati);
+    }
+    const { contatti: l } = await api("api/contatti");
+    contatti = l; scrivi("contatti", contatti);
+    rete(true);
+  } catch (e) {
+    if (e.stato === 401) { codice = ""; scrivi("codice", ""); mostraEntra(); $("#statoEntra").textContent = "Il codice non va più bene: rimettilo."; }
+    else rete(navigator.onLine && !(e instanceof TypeError));
+  } finally { inViaggio = false; disegna(); }
+}
+function rete(ok) { const r = $("#rete"); r.textContent = ok ? "in linea" : "fuori linea"; r.classList.toggle("no", !ok); }
+addEventListener("online", () => { rete(true); sincronizza(); });
+addEventListener("offline", () => rete(false));
+setInterval(() => { if (document.visibilityState === "visible") sincronizza(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") sincronizza(); });
+
+// ---------- Lista ----------
+function tutti() {
+  const inCoda = new Map(coda.map((c) => [c.id, c]));
+  const via = new Set(cancellati);
+  const l = contatti.filter((c) => !inCoda.has(c.id) && !via.has(c.id)).concat(coda.filter((c) => !via.has(c.id)).map((c) => ({ ...c, _coda: true })));
+  return l.sort((a, b) => String(b.data).localeCompare(String(a.data)) || String(b.creato_il || "~").localeCompare(String(a.creato_il || "~")));
+}
+function filtrati() {
+  const q = $("#cerca").value.trim().toLowerCase();
+  const l = tutti();
+  if (!q) return l;
+  return l.filter((c) => [c.nome, c.cognome, c.ruolo, c.comune, c.email, c.telefono, c.interesse, c.fiera, c.registrato_da, c.note].join(" ").toLowerCase().includes(q));
+}
+const dataIt = (d) => (d ? d.split("-").reverse().join("/") : "");
+function disegna() {
+  const l = filtrati(), ul = $("#lista"); ul.textContent = "";
+  $("#titoloLista").textContent = `Contatti (${tutti().length})`;
+  if (!l.length) { const li = document.createElement("li"); li.innerHTML = '<span>Ancora nessun contatto.</span>'; ul.append(li); return; }
+  for (const c of l) {
+    const li = document.createElement("li");
+    const d = document.createElement("div"); d.className = "chi";
+    const b = document.createElement("b"); b.textContent = [c.nome, c.cognome].filter(Boolean).join(" ") || c.email || "(senza nome)";
+    if (c._coda) { const q = document.createElement("span"); q.className = "coda"; q.textContent = "da inviare"; q.style.display = "inline"; b.append(q); }
+    const s1 = document.createElement("span"); s1.textContent = [c.ruolo, c.comune && (c.comune + (c.provincia ? ` (${c.provincia})` : ""))].filter(Boolean).join(" · ");
+    const s2 = document.createElement("span"); s2.textContent = [c.email, c.telefono].filter(Boolean).join(" · ");
+    const s3 = document.createElement("span"); s3.textContent = [c.interesse, dataIt(c.data), c.registrato_da && "da " + c.registrato_da].filter(Boolean).join(" · ");
+    d.append(b, s1, s2, s3);
+    const ap = document.createElement("button"); ap.className = "piccolo"; ap.textContent = "Apri";
+    ap.addEventListener("click", () => apri(c));
+    const el = document.createElement("button"); el.className = "piccolo"; el.textContent = "Elimina";
+    el.addEventListener("click", () => {
+      if (el.dataset.sicuro) { cancella(c.id); return; }
+      el.dataset.sicuro = "1"; el.textContent = "Sicuro?"; setTimeout(() => { el.dataset.sicuro = ""; el.textContent = "Elimina"; }, 3000);
+    });
+    li.append(d, ap, el); ul.append(li);
+  }
+}
+function apri(c) {
+  nuovo(); corrente = c.id;
+  for (const k of [...CAMPI, "provincia", "note"]) { const e = campo(k); if (e) e.value = c[k] || ""; }
+  $("#testo").value = c.trascrizione || "";
+  $("#titoloScheda").textContent = "Modifica contatto"; $("#btSalva").textContent = "Salva modifiche";
+  toccati = new Set([...CAMPI, "provincia", "note"]);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function cancella(id) {
+  if (coda.some((c) => c.id === id) && !contatti.some((c) => c.id === id)) { coda = coda.filter((c) => c.id !== id); scrivi("coda", coda); }
+  else { cancellati.push(id); scrivi("cancellati", cancellati); }
+  disegna(); sincronizza();
+}
+$("#cerca").addEventListener("input", disegna);
+
+// ---------- Excel, con le colonne del foglio «Contatti fiera» ----------
+function caricaXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return new Promise((ok, ko) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    s.onload = () => ok(window.XLSX); s.onerror = () => ko(new Error("serve la rete per creare l'Excel")); document.head.append(s);
+  });
+}
+$("#btExcel").addEventListener("click", async () => {
+  try {
+    const XLSX = await caricaXLSX();
+    const l = filtrati().slice().reverse();
+    const daData = (d) => { if (!d) return ""; const [a, m, g] = d.split("-").map(Number); return new Date(a, m - 1, g, 12); };
+    const righe = [INTESTAZIONI, ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.ruolo, c.comune, c.email, c.telefono, c.interesse])];
+    const ws = XLSX.utils.aoa_to_sheet(righe, { cellDates: true, dateNF: "dd/mm/yyyy" });
+    ws["!cols"] = [12, 14, 16, 18, 24, 32, 16, 28].map((w) => ({ wch: w }));
+    const det = XLSX.utils.aoa_to_sheet([["Data contatto", "Nome", "Cognome", "Provincia", "Note", "Fiera", "Registrato da", "Quello che è stato detto"],
+      ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.provincia, c.note, c.fiera, c.registrato_da, c.trascrizione])], { cellDates: true, dateNF: "dd/mm/yyyy" });
+    det["!cols"] = [12, 14, 16, 9, 40, 22, 16, 80].map((w) => ({ wch: w }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contatti fiera");
+    XLSX.utils.book_append_sheet(wb, det, "Dettagli");
+    const mese = new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }).replace(" ", "_");
+    XLSX.writeFile(wb, `contatti_fiera_${mese}.xlsx`);
+  } catch (e) { avviso(e.message, "err"); }
+});
+
+// ---------- Impostazioni ----------
+$("#setChi").addEventListener("change", () => { chi = $("#setChi").value.trim(); scrivi("chi", chi); });
+$("#setFiera").addEventListener("change", () => { fiera = $("#setFiera").value.trim(); scrivi("fiera", fiera); $("#titoloFiera").textContent = fiera ? "· " + fiera : ""; });
+$("#btEsci").addEventListener("click", () => { codice = ""; scrivi("codice", ""); mostraEntra(); });
+$("#btEntra").addEventListener("click", entra);
+$("#inCodice").addEventListener("keydown", (e) => { if (e.key === "Enter") entra(); });
+
+rete(navigator.onLine);
+if (codice && chi) avvia(); else mostraEntra();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
