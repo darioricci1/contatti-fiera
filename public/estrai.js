@@ -1,5 +1,5 @@
 // contatti-fiera/public/estrai.js
-// version: 0.1.0
+// version: 0.1.1
 //
 // Dal parlato ai campi del foglio «Contatti fiera». Funziona senza rete e
 // senza IA: cerca le parole guida (nome, cognome, ruolo, comune, email,
@@ -17,7 +17,7 @@ const RUOLI = [
   ["comandante", "Comandante"], ["vice commissario", "Vice commissario"],
   ["commissario", "Commissario"], ["ispettore superiore", "Ispettore superiore"],
   ["ispettore", "Ispettore"], ["sovrintendente", "Sovrintendente"],
-  ["assistente", "Assistente"], ["agente", "Agente"], ["ufficiale", "Ufficiale"],
+  ["assistente", "Assistente"], ["agente", "Agente"], ["vigile urbano", "Vigile"], ["vigilessa", "Vigile"], ["vigile", "Vigile"], ["ufficiale", "Ufficiale"],
   ["istruttore direttivo", "Istruttore direttivo"], ["istruttore", "Istruttore"],
   ["luogotenente", "Luogotenente"], ["maresciallo", "Maresciallo"],
   ["brigadiere", "Brigadiere"], ["appuntato", "Appuntato"], ["capitano", "Capitano"],
@@ -84,7 +84,9 @@ function segmenti(testo) {
     re.lastIndex = 0;
     let m;
     while ((m = re.exec(basso))) {
-      // «comune» detto dentro un ruolo («polizia del comune») conta lo stesso; «nome» dentro «cognome» no (\b).
+      // Dentro un'email detta a voce («chiocciola comune punto forli») non e' una parola guida.
+      const prima = basso.slice(Math.max(0, m.index - 12), m.index), dopo = basso.slice(m.index + m[0].length, m.index + m[0].length + 8);
+      if (/(?:chiocciola|punto|@|\.)\s*$/.test(prima) || /^\s*(?:punto\b|\.\w|@|chiocciola)/.test(dopo)) continue;
       trovati.push({ campo, inizio: m.index, fine: m.index + m[0].length });
     }
   }

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.1.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.1.1 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -142,7 +142,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         <label>Fiera<input id="setFiera"></label>
       </div>
       <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button></div>
-      <div class="versione" id="versione">versione 0.1.0</div>
+      <div class="versione" id="versione">versione 0.1.1</div>
     </section>
   </div>
 </main>
@@ -166,7 +166,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono } from "./estrai.js";
 
-const VERSIONE = "0.1.0";
+const VERSIONE = "0.1.1";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };

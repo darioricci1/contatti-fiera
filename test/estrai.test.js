@@ -1,5 +1,5 @@
 // contatti-fiera/test/estrai.test.js
-// version: 0.1.0
+// version: 0.1.1
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -36,6 +36,12 @@ test("comune con 'di' e numeri a parole", () => {
   assert.equal(r.comune, "Forlì"); assert.equal(r.provincia, "FC");
   assert.equal(r.ruolo, "Ispettore"); assert.equal(r.telefono, "333 123 4567");
   assert.equal(r.nome, "Mario"); assert.equal(r.cognome, "Rossi");
+});
+
+test("parole guida dentro l'email", () => {
+  const r = estrai("Mario Rossi, ispettore del comune di Forlì, email mario punto rossi chiocciola comune punto forli punto fc punto it, numero 333 123 4567", D);
+  assert.equal(r.email, "mario.rossi@comune.forli.fc.it");
+  assert.equal(r.comune, "Forlì"); assert.equal(r.telefono, "333 123 4567");
 });
 
 test("pezzi", () => {
