@@ -1,6 +1,6 @@
 {
   "name": "contatti-fiera",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "description": "Contatti fiera di Alma Sicurezza: si parla, la pagina compila il foglio dei contatti e lo condivide con la squadra.",

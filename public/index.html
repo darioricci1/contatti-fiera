@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.7.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.8.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -189,7 +189,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         <button id="btAmmetti">Aggiungi</button>
       </div>
     </section>
-    <div class="versione" id="versione">versione 0.7.0</div>
+    <div class="versione" id="versione">versione 0.8.0</div>
   </div>
 </div>
 
@@ -212,7 +212,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.7.0";
+const VERSIONE = "0.8.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
@@ -522,6 +522,7 @@ function disegna() {
     const s1 = document.createElement("span"); s1.textContent = [c.ruolo, c.comune && (c.comune + (c.provincia ? ` (${c.provincia})` : ""))].filter(Boolean).join(" · ");
     const s2 = document.createElement("span"); s2.textContent = [c.email, c.telefono].filter(Boolean).join(" · ");
     const s3 = document.createElement("span"); s3.textContent = [c.interesse, dataIt(c.data), c.fiera, c.registrato_da && "da " + c.registrato_da].filter(Boolean).join(" · ");
+    if (c.registrato_email) s3.title = "Salvato dall'account " + c.registrato_email;
     d.append(b, s1, s2, s3);
     const ap = document.createElement("button"); ap.className = "piccolo"; ap.textContent = "Apri";
     ap.addEventListener("click", () => apri(c));
@@ -564,11 +565,14 @@ $("#btExcel").addEventListener("click", async () => {
     const XLSX = await caricaXLSX();
     const l = filtrati().slice().reverse();
     const daData = (d) => { if (!d) return ""; const [a, m, g] = d.split("-").map(Number); return new Date(a, m - 1, g, 12); };
-    const righe = [INTESTAZIONI, ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.ruolo, c.comune, c.email, c.telefono, c.interesse])];
+    const salvatoDa = (c) => c.registrato_email
+      ? (c.registrato_da && c.registrato_da !== c.registrato_email ? `${c.registrato_da} (${c.registrato_email})` : c.registrato_email)
+      : (c.registrato_da || "");
+    const righe = [[...INTESTAZIONI, "Salvato da"], ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.ruolo, c.comune, c.email, c.telefono, c.interesse, salvatoDa(c)])];
     const ws = XLSX.utils.aoa_to_sheet(righe, { cellDates: true, dateNF: "dd/mm/yyyy" });
-    ws["!cols"] = [12, 14, 16, 18, 24, 32, 16, 28].map((w) => ({ wch: w }));
-    const det = XLSX.utils.aoa_to_sheet([["Data contatto", "Nome", "Cognome", "Provincia", "Note", "Fiera", "Registrato da", "Quello che è stato detto"],
-      ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.provincia, c.note, c.fiera, c.registrato_da, c.trascrizione])], { cellDates: true, dateNF: "dd/mm/yyyy" });
+    ws["!cols"] = [12, 14, 16, 18, 24, 32, 16, 28, 38].map((w) => ({ wch: w }));
+    const det = XLSX.utils.aoa_to_sheet([["Data contatto", "Nome", "Cognome", "Provincia", "Note", "Fiera", "Salvato da", "Quello che è stato detto"],
+      ...l.map((c) => [daData(c.data), c.nome, c.cognome, c.provincia, c.note, c.fiera, salvatoDa(c), c.trascrizione])], { cellDates: true, dateNF: "dd/mm/yyyy" });
     det["!cols"] = [12, 14, 16, 9, 40, 22, 16, 80].map((w) => ({ wch: w }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Contatti fiera");

@@ -1,12 +1,13 @@
 # Contatti fiera
 
-<!-- version: 0.7.0 -->
+<!-- version: 0.8.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
 (Data contatto, Nome, Cognome, Ruolo, Comune, Email, Telefono, Interesse).
 Si controllano i campi, si salva, e il contatto arriva alla lista comune
-della squadra. «Scarica Excel» rifà il file con le stesse colonne.
+della squadra. «Scarica Excel» rifà il file con le stesse colonne, più «Salvato da»: il
+nome e l'account Google di chi ha salvato il contatto per primo.
 
 Si apre su https://contatti-fiera.vercel.app dal telefono (si può aggiungere
 alla schermata Home). Si entra con Google: gli amministratori

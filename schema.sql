@@ -1,5 +1,5 @@
 -- contatti-fiera/schema.sql
--- version: 0.3.0
+-- version: 0.4.0
 --
 -- Lo schema `fiera` nel database unico di Alma (Neon, lo stesso del
 -- gestionale). Una riga per contatto, con le colonne del foglio
@@ -52,3 +52,6 @@ create table if not exists fiera.evento (
   creato_da text not null default '',
   creato_il timestamptz not null default now()
 );
+
+-- L'account Google di chi ha salvato il contatto per primo (lo scrive il server).
+alter table fiera.contatto add column if not exists registrato_email text not null default '';

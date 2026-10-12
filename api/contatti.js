@@ -1,5 +1,5 @@
 // contatti-fiera/api/contatti.js
-// version: 0.3.0
+// version: 0.4.0
 //
 // I contatti della squadra. GET: tutti (piu' recenti prima). POST: uno o piu'
 // contatti, salvati per id (rimandarli non duplica: e' la coda del telefono
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       const righe = await db.query(
         `select id, to_char(data_contatto, 'YYYY-MM-DD') as data, ${COLONNE.slice(1).join(", ")},
-                creato_il, aggiornato_il
+                registrato_email, creato_il, aggiornato_il
            from fiera.contatto where cancellato_il is null
           order by data_contatto desc, creato_il desc`);
       return risposta(res, 200, { contatti: righe });
@@ -46,18 +46,25 @@ export default async function handler(req, res) {
       const b = await corpo(req);
       const lista = (Array.isArray(b.contatti) ? b.contatti : [b]).slice(0, 200).map(riga);
       for (const c of lista) {
-        // Chi registra lo dice l'accesso Google (il nome, o l'email se Google non da' il nome).
-        if (!c.registrato_da) c.registrato_da = io.nome || io.email;
+        // Chi registra lo dice l'accesso Google, non il telefono: il nome (o l'email
+        // se Google non da' il nome) e l'account. Su un contatto gia' salvato restano
+        // quelli di chi l'ha salvato per primo (vedi «on conflict» qui sotto).
+        c.registrato_da = io.nome || io.email;
+        c.registrato_email = io.email;
         // La fiera la decide il calendario, dal giorno del contatto.
         const [f] = await db.query(SQL_FIERA_DEL_GIORNO, [c.data_contatto]);
         if (f) c.fiera = f.nome; else if (!c.fiera) c.fiera = "";
       }
       for (const c of lista) {
-        const valori = [c.id, ...COLONNE.map((k) => c[k])];
+        const tutte = [...COLONNE, "registrato_email"];
+        const valori = [c.id, ...tutte.map((k) => c[k])];
         await db.query(
-          `insert into fiera.contatto (id, ${COLONNE.join(", ")})
+          `insert into fiera.contatto (id, ${tutte.join(", ")})
            values (${valori.map((_, i) => "$" + (i + 1)).join(", ")})
-           on conflict (id) do update set ${COLONNE.map((k) => `${k} = excluded.${k}`).join(", ")},
+           on conflict (id) do update set
+             ${COLONNE.filter((k) => k !== "registrato_da").map((k) => `${k} = excluded.${k}`).join(", ")},
+             registrato_da = coalesce(nullif(fiera.contatto.registrato_da, ''), excluded.registrato_da),
+             registrato_email = coalesce(nullif(fiera.contatto.registrato_email, ''), excluded.registrato_email),
              aggiornato_il = now(), cancellato_il = null`, valori);
       }
       return risposta(res, 200, { salvati: lista.map((c) => c.id) });
