@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.6.0 -->
+<!-- version: 0.7.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -14,7 +14,7 @@ alla schermata Home). Si entra con Google: gli amministratori
 domini di `FIERA_DOMINI` (almasicurezza.it) e chi l'amministratore aggiunge in
 Impostazioni (l'ingranaggio in alto a destra) → «Chi può entrare con Google».
 Il nome di chi registra viene da Google (o l'email, se Google non lo dà) e non
-si cambia. Nel **calendario delle fiere** (Impostazioni) l'amministratore mette
+si cambia. Nel **calendario delle fiere** (Impostazioni) chiunque della squadra mette
 nome, luogo e giorni di ogni fiera: un contatto salvato in uno di quei giorni
 va da solo in quella fiera, e la lista si filtra per fiera (anche l'Excel). La data del contatto è quella del giorno in cui si salva;
 «Scarica Excel» salva prima il contatto compilato e non ancora salvato.

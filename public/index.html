@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.6.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.7.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -38,8 +38,9 @@ header small{opacity:.85;font-size:13px}
 #impostazioni .testa h1{font-size:18px;margin:0;flex:1}
 #impostazioni .dentro{max-width:720px;margin:0 auto;padding:14px 16px}
 .chiudi{background:transparent;border:none;color:#fff;font-size:26px;line-height:1;min-height:40px;width:40px;padding:0}
-.fiere li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bordo);font-size:14px}
+.fiere li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bordo);font-size:14px}
 .fiere li:first-child{border-top:none}
+.fiere li>span:first-child{flex:1;min-width:0}
 .lista .fiere .oggi,.fiere .oggi{display:inline;font-size:11px;background:var(--giallo);border:1px solid var(--giallo-b);border-radius:99px;padding:1px 7px;margin-left:6px}
 .filtri{display:flex;gap:8px;margin-bottom:8px}
 .filtri select{flex:0 0 42%}
@@ -167,16 +168,16 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
     </section>
     <section class="carta">
       <h2>Calendario delle fiere</h2>
-      <p class="aiuto" style="text-align:left;margin:0 0 8px">Un contatto salvato in un giorno di fiera va da solo in quella fiera.</p>
+      <p class="aiuto" style="text-align:left;margin:0 0 8px">Un contatto salvato in un giorno di fiera va da solo in quella fiera. Il calendario lo aggiorna chiunque della squadra.</p>
       <ul class="lista fiere" id="fiere"></ul>
-      <div id="zonaNuovaFiera" class="nascosto">
+      <div id="zonaNuovaFiera">
         <div class="campi">
           <label class="largo">Nome della fiera<input id="fNome" placeholder="es. Expo Polizia Locale Riccione"></label>
           <label class="largo">Luogo<input id="fLuogo" placeholder="es. Riccione"></label>
           <label>Dal<input id="fDal" type="date"></label>
           <label>Al<input id="fAl" type="date"></label>
         </div>
-        <div class="riga" style="margin-top:10px"><button class="pieno" id="btFiera">Aggiungi fiera</button></div>
+        <div class="riga" style="margin-top:10px"><button class="pieno" id="btFiera">Aggiungi fiera</button><button id="btAnnullaFiera" class="nascosto">Annulla</button></div>
       </div>
       <div class="stato" id="statoFiere"></div>
     </section>
@@ -188,7 +189,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         <button id="btAmmetti">Aggiungi</button>
       </div>
     </section>
-    <div class="versione" id="versione">versione 0.6.0</div>
+    <div class="versione" id="versione">versione 0.7.0</div>
   </div>
 </div>
 
@@ -211,7 +212,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.6.0";
+const VERSIONE = "0.7.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
@@ -286,7 +287,6 @@ async function avvia() {
   $("#btFoto").classList.toggle("nascosto", !servizio.ia);
   $("#versione").textContent = `versione ${VERSIONE}` + (servizio.ia ? " · IA attiva" : " · riconoscimento sul telefono");
   $("#zonaAmmessi").classList.toggle("nascosto", !(utente && utente.admin));
-  $("#zonaNuovaFiera").classList.toggle("nascosto", !(utente && utente.admin));
   caricaFiere();
   if (utente && utente.admin) caricaAmmessi();
   sincronizza();
@@ -602,7 +602,15 @@ function disegnaFiere() {
     t.textContent = `${f.nome}${f.luogo ? " · " + f.luogo : ""} · ${dataIt(f.dal)}${f.al !== f.dal ? " – " + dataIt(f.al) : ""}`;
     if (f.dal <= oggi && oggi <= f.al) { const o = document.createElement("span"); o.className = "oggi"; o.textContent = "oggi"; t.append(o); }
     li.append(t);
-    if (utente && utente.admin) {
+    {
+      const m = document.createElement("button"); m.className = "piccolo"; m.textContent = "Modifica";
+      m.addEventListener("click", () => {
+        fieraInModifica = f.id;
+        $("#fNome").value = f.nome; $("#fLuogo").value = f.luogo || ""; $("#fDal").value = f.dal; $("#fAl").value = f.al;
+        $("#btFiera").textContent = "Salva fiera"; $("#btAnnullaFiera").classList.remove("nascosto");
+        $("#fNome").focus();
+      });
+      li.append(m);
       const b = document.createElement("button"); b.className = "piccolo"; b.textContent = "Togli";
       b.addEventListener("click", async () => {
         if (!b.dataset.sicuro) { b.dataset.sicuro = "1"; b.textContent = "Sicuro?"; return setTimeout(() => { b.dataset.sicuro = ""; b.textContent = "Togli"; }, 3000); }
@@ -621,14 +629,21 @@ function disegnaFiere() {
   }
   sel.value = [...sel.options].some((o) => o.value === prima) ? prima : "*";
 }
+let fieraInModifica = null;
+function finisciModificaFiera() {
+  fieraInModifica = null; $("#fNome").value = $("#fLuogo").value = $("#fDal").value = $("#fAl").value = "";
+  $("#btFiera").textContent = "Aggiungi fiera"; $("#btAnnullaFiera").classList.add("nascosto");
+}
+$("#btAnnullaFiera").addEventListener("click", finisciModificaFiera);
 $("#btFiera").addEventListener("click", async () => {
   const nome = $("#fNome").value.trim(), luogo = $("#fLuogo").value.trim(), dal = $("#fDal").value, al = $("#fAl").value || dal;
   const st = $("#statoFiere");
   if (!nome || !dal) { st.textContent = "Servono il nome e il primo giorno della fiera."; st.className = "stato err"; return; }
   try {
-    await caricaFiere(await api("api/fiere", { method: "POST", body: JSON.stringify({ nome, luogo, dal, al }) }));
-    $("#fNome").value = $("#fLuogo").value = $("#fDal").value = $("#fAl").value = "";
-    st.textContent = `Aggiunta: ${nome}. I contatti di quei giorni ora sono in questa fiera.`; st.className = "stato ok";
+    const modifica = fieraInModifica;
+    await caricaFiere(await api("api/fiere", { method: "POST", body: JSON.stringify({ id: modifica || undefined, nome, luogo, dal, al }) }));
+    finisciModificaFiera();
+    st.textContent = `${modifica ? "Salvata" : "Aggiunta"}: ${nome}. I contatti di quei giorni ora sono in questa fiera.`; st.className = "stato ok";
     sincronizza();
   } catch (e) { st.textContent = e.message; st.className = "stato err"; }
 });
