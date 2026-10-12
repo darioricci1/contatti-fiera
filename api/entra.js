@@ -1,5 +1,5 @@
 // contatti-fiera/api/entra.js
-// version: 0.2.0
+// version: 0.3.0
 //
 // L'ingresso con Google. POST {accessToken} dal nostro pulsante o
 // {credential} da quello ufficiale: Google conferma chi e', qui si guarda se
@@ -8,7 +8,7 @@
 import * as db from "../lib/db.js";
 import { verificaAccessToken, verificaIdToken } from "../lib/google-id.js";
 import { firma, cookieDaMettere, cookieDaTogliere } from "../lib/sessione.js";
-import { amministratori, corpo, risposta } from "../lib/porta.js";
+import { amministratori, ammessoDaVariabili, corpo, risposta } from "../lib/porta.js";
 
 const tentativi = new Map(); // ip -> [istanti], 30 ogni 10 minuti
 
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   try {
     const b = await corpo(req);
     const g = b.accessToken ? await verificaAccessToken(b.accessToken) : await verificaIdToken(b.credential);
-    let ammesso = amministratori().includes(g.email);
+    let ammesso = ammessoDaVariabili(g.email);
     if (!ammesso && db.configurato()) {
       await db.preparaSchema();
       ammesso = (await db.query("select 1 from fiera.ammesso where email = $1", [g.email])).length > 0;

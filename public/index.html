@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.3.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.4.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -159,7 +159,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         </div>
       </div>
       <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button> <span class="aiuto" id="chiSono"></span></div>
-      <div class="versione" id="versione">versione 0.3.0</div>
+      <div class="versione" id="versione">versione 0.4.0</div>
     </section>
   </div>
 </main>
@@ -183,7 +183,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.3.0";
+const VERSIONE = "0.4.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
@@ -281,6 +281,8 @@ async function caricaAmmessi(r) {
     const j = r || await api("api/ammessi");
     const ul = $("#ammessi"); ul.textContent = "";
     for (const e of j.amministratori) { const li = document.createElement("li"); li.textContent = e + " · amministratore"; ul.append(li); }
+    for (const d of j.domini || []) { const li = document.createElement("li"); li.textContent = "tutti gli indirizzi @" + d; ul.append(li); }
+    for (const e of j.fissi || []) { const li = document.createElement("li"); li.textContent = e; ul.append(li); }
     for (const a of j.ammessi) {
       const li = document.createElement("li"); const t = document.createElement("span"); t.textContent = a.email;
       const b = document.createElement("button"); b.className = "piccolo"; b.textContent = "Togli";

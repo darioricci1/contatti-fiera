@@ -1,10 +1,10 @@
 // contatti-fiera/public/sw.js
-// version: 0.3.0
+// version: 0.4.0
 //
 // La pagina si apre anche senza rete (in fiera il segnale va e viene):
 // prima la rete, se manca la copia salvata. Le /api non si salvano mai.
 
-const CASSA = "contatti-fiera-0.3.0";
+const CASSA = "contatti-fiera-0.4.0";
 const GUSCIO = ["./", "index.html", "estrai.js", "porta.js", "porta.css", "comuni.json", "manifest.json", "icona.svg"];
 
 self.addEventListener("install", (e) => {

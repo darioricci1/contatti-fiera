@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.3.0 -->
+<!-- version: 0.4.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -55,6 +55,8 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
   `https://contatti-fiera.vercel.app`.
 - `SESSIONE_SEGRETO`, `NOME_COOKIE`: la firma del cookie d'accesso.
 - `FIERA_AMMINISTRATORI`: gli indirizzi di chi gestisce la squadra.
+- `FIERA_DOMINI`: i domini che entrano tutti (`almasicurezza.it`).
+- `FIERA_AMMESSI`: altri indirizzi che entrano sempre.
 - `FIERA_CODICE`: il codice della squadra, l'ingresso di riserva.
 - `ALMA_DATABASE_URL` (e le altre `ALMA_*`): dall'integrazione Neon di Alma.
 - `ANTHROPIC_API_KEY` (facoltativa): accende l'IA e la foto del biglietto.

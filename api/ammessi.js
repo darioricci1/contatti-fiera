@@ -1,11 +1,11 @@
 // contatti-fiera/api/ammessi.js
-// version: 0.2.0
+// version: 0.3.0
 //
 // Chi puo' entrare con Google. Solo gli amministratori: GET l'elenco,
 // POST {email} aggiunge, DELETE ?email= toglie.
 
 import * as db from "../lib/db.js";
-import { amministratori, chi, corpo, risposta } from "../lib/porta.js";
+import { amministratori, ammessiFissi, chi, corpo, dominiAmmessi, risposta } from "../lib/porta.js";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       await db.query("delete from fiera.ammesso where email = $1", [email]);
     } else if (req.method !== "GET") return risposta(res, 405, { errore: "metodo non previsto" });
     const righe = await db.query("select email, aggiunto_da, creato_il from fiera.ammesso order by email");
-    return risposta(res, 200, { amministratori: amministratori(), ammessi: righe });
+    return risposta(res, 200, { amministratori: amministratori(), fissi: ammessiFissi(), domini: dominiAmmessi(), ammessi: righe });
   } catch (e) {
     return risposta(res, 400, { errore: String(e.message || e) });
   }
