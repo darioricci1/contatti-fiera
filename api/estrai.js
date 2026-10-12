@@ -1,12 +1,12 @@
 // contatti-fiera/api/estrai.js
-// version: 0.1.0
+// version: 0.2.0
 //
 // L'IA che compila i campi: dal testo dettato, o dalla foto di un biglietto da
 // visita o di un badge. Si accende solo se nel progetto Vercel c'e'
 // ANTHROPIC_API_KEY; senza, la pagina usa il riconoscitore del telefono
 // (public/estrai.js), che fa lo stesso lavoro con regole fisse.
 
-import { autorizzato, corpo, risposta } from "../lib/porta.js";
+import { chi, corpo, risposta } from "../lib/porta.js";
 
 const MODELLO = process.env.FIERA_MODELLO || "claude-haiku-5-5";
 
@@ -39,7 +39,8 @@ Regole: non inventare; un campo non detto resta stringa vuota. Correggi gli erro
 usala come punto di partenza e correggila.`;
 
 export default async function handler(req, res) {
-  if (!autorizzato(req)) return risposta(res, 401, { errore: "codice della squadra mancante o sbagliato" });
+  const io = await chi(req);
+  if (!io) return risposta(res, 401, { errore: "non sei entrato" });
   const chiave = (process.env.ANTHROPIC_API_KEY || "").trim();
   if (!chiave) return risposta(res, 501, { errore: "IA non attiva: manca ANTHROPIC_API_KEY" });
   if (req.method !== "POST") return risposta(res, 405, { errore: "solo POST" });

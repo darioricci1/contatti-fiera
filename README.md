@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.2.0 -->
+<!-- version: 0.3.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -41,13 +41,21 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
 - `api/contatti.js`: la lista comune, nello schema `fiera` del database unico
   di Alma (Neon, lo stesso del gestionale). `schema.sql` ha la versione: lo
   schema si crea o si aggiorna da solo alla prima chiamata.
-- `api/stato.js`: cosa è acceso (database, IA, codice).
+- `api/entra.js`, `api/ammessi.js`, `lib/google-id.js`, `lib/sessione.js`,
+  `public/porta.js`: l'accesso con Google, copiato da `attrezzi/accesso-google`.
+- `api/stato.js`: cosa è acceso (database, IA, Google, codice) e chi è entrato.
 - Senza rete la pagina si apre lo stesso (`sw.js`) e i contatti salvati
   restano sul telefono con «da inviare»; partono appena torna il segnale.
 
 ## Variabili del progetto Vercel `contatti-fiera`
 
-- `FIERA_CODICE`: il codice della squadra.
+- `GOOGLE_CLIENT_ID_ACCESSO`: il client Google dell'accesso (lo stesso della
+  Mappa del vino e del quaderno). Nella Google Cloud Console, alla voce
+  «Origini JavaScript autorizzate» di quel client, ci dev'essere
+  `https://contatti-fiera.vercel.app`.
+- `SESSIONE_SEGRETO`, `NOME_COOKIE`: la firma del cookie d'accesso.
+- `FIERA_AMMINISTRATORI`: gli indirizzi di chi gestisce la squadra.
+- `FIERA_CODICE`: il codice della squadra, l'ingresso di riserva.
 - `ALMA_DATABASE_URL` (e le altre `ALMA_*`): dall'integrazione Neon di Alma.
 - `ANTHROPIC_API_KEY` (facoltativa): accende l'IA e la foto del biglietto.
   `FIERA_MODELLO` cambia il modello (predefinito `claude-haiku-5-5`).

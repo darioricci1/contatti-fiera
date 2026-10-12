@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.2.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.3.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -9,6 +9,9 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icona.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icona.svg">
+<link rel="stylesheet" href="porta.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="porta.js"></script>
 <style>
 :root{
   --sfondo:#f3f5f8;--carta:#fff;--testo:#16202b;--tenue:#5c6b7a;--bordo:#d6dde5;
@@ -70,6 +73,12 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 .piede button{flex:1;max-width:340px}
 #entra{max-width:420px;margin:40px auto}
 #entra label{display:block;margin:12px 0 4px;font-size:14px;color:var(--tenue)}
+#entra{--porta-sfondo:var(--carta);--porta-testo:var(--blu);--porta-piano:var(--tenue)}
+#entra .porta{min-height:0;padding:8px 0 4px}
+#entra .porta-scheda h2{font-size:18px}
+#conCodice{margin-top:14px;border-top:1px solid var(--bordo);padding-top:10px}
+#conCodice summary{cursor:pointer;color:var(--tenue);font-size:14px}
+.ammessi li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--bordo);font-size:14px;overflow-wrap:anywhere}
 .nascosto{display:none!important}
 .versione{font-size:12px;color:var(--tenue);text-align:center;margin-top:10px}
 </style>
@@ -82,15 +91,15 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 
 <main>
   <section class="carta nascosto" id="entra">
-    <h2>Entra nella squadra</h2>
-    <p class="aiuto" style="text-align:left">Il codice lo ha Dario. Il nome serve a sapere chi era allo stand.</p>
-    <label for="inCodice">Codice della squadra</label>
-    <input id="inCodice" autocomplete="off" autocapitalize="none" spellcheck="false">
-    <label for="inChi">Il tuo nome</label>
-    <input id="inChi" autocomplete="name">
-    <label for="inFiera">Fiera</label>
-    <input id="inFiera" placeholder="es. Fiera ottobre 2026">
-    <div class="riga" style="margin-top:14px"><button class="pieno" id="btEntra">Entra</button></div>
+    <div id="portaGoogle"></div>
+    <details id="conCodice">
+      <summary>Entra con il codice della squadra</summary>
+      <label for="inCodice">Codice della squadra</label>
+      <input id="inCodice" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <label for="inChi">Il tuo nome</label>
+      <input id="inChi" autocomplete="name">
+      <div class="riga" style="margin-top:14px"><button class="pieno" id="btEntra">Entra</button></div>
+    </details>
     <div class="stato" id="statoEntra"></div>
   </section>
 
@@ -141,8 +150,16 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
         <label>Il tuo nome<input id="setChi"></label>
         <label>Fiera<input id="setFiera"></label>
       </div>
-      <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button></div>
-      <div class="versione" id="versione">versione 0.2.0</div>
+      <div id="zonaAmmessi" class="nascosto" style="margin-top:14px">
+        <h2>Chi può entrare con Google</h2>
+        <ul class="lista ammessi" id="ammessi"></ul>
+        <div class="riga" style="margin-top:8px;flex-wrap:nowrap">
+          <input id="nuovoAmmesso" type="email" placeholder="email Google del collega" autocapitalize="none">
+          <button id="btAmmetti">Aggiungi</button>
+        </div>
+      </div>
+      <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button> <span class="aiuto" id="chiSono"></span></div>
+      <div class="versione" id="versione">versione 0.3.0</div>
     </section>
   </div>
 </main>
@@ -166,7 +183,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.2.0";
+const VERSIONE = "0.3.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
@@ -176,6 +193,7 @@ let contatti = leggi("contatti", []);   // l'ultima lista vista dal server
 let coda = leggi("coda", []);           // salvati qui e non ancora arrivati
 let cancellati = leggi("cancellati", []);
 let servizio = { ia: false, database: false };
+let utente = leggi("utente", null); // chi e' entrato con Google
 let corrente = null;                    // id della scheda aperta
 let toccati = new Set();                // campi scritti a mano: l'IA non li sovrascrive
 
@@ -192,41 +210,90 @@ async function api(percorso, opz = {}) {
 function avviso(testo, tipo = "") { const s = $("#stato"); s.textContent = testo; s.className = "stato " + tipo; }
 
 // ---------- Entrare ----------
-async function entra() {
+// Con Google (cookie messo da /api/entra) o, di riserva, con il codice della squadra.
+const fieraDiOggi = () => `Fiera ${new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
+
+async function entraConCodice() {
   const c = $("#inCodice").value.trim(), n = $("#inChi").value.trim();
   if (!c || !n) { $("#statoEntra").textContent = "Servono codice e nome."; return; }
   $("#statoEntra").textContent = "Controllo…";
   codice = c;
   try {
     const s = await api("api/stato");
-    if (!s.entrato) { $("#statoEntra").textContent = "Codice sbagliato."; $("#statoEntra").className = "stato err"; return; }
+    if (!s.entrato) { codice = ""; $("#statoEntra").textContent = "Codice sbagliato."; $("#statoEntra").className = "stato err"; return; }
     servizio = s;
   } catch {
     // Senza rete si entra lo stesso: il codice si controlla al primo invio.
   }
-  chi = n; fiera = $("#inFiera").value.trim();
-  scrivi("codice", codice); scrivi("chi", chi); scrivi("fiera", fiera);
+  chi = n; scrivi("codice", codice); scrivi("chi", chi);
   avvia();
 }
 
-function mostraEntra() {
+function mostraEntra(motivo = "") {
   $("#entra").classList.remove("nascosto"); $("#app").classList.add("nascosto"); $("#piede").classList.add("nascosto");
-  $("#inChi").value = chi; $("#inFiera").value = fiera || `Fiera ${new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
+  $("#inChi").value = chi; $("#statoEntra").textContent = motivo; $("#statoEntra").className = "stato" + (motivo ? " err" : "");
+  const porta = $("#portaGoogle");
+  if (servizio.google && window.portaGoogle) {
+    window.portaGoogle(porta, {
+      clientId: servizio.clientId, marchio: "Alma Sicurezza", titolo: "Contatti fiera",
+      testo: "Entra con il tuo account Google. Se non sei ancora nella squadra, chiedi a Dario di aggiungerti.",
+      entra: async (biglietto) => {
+        const r = await fetch("api/entra", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(biglietto) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.errore || "Accesso non riuscito.");
+        utente = { ...j, via: "google" }; chi = j.nome || j.email; scrivi("utente", utente); scrivi("chi", chi);
+      },
+      dopo: () => avvia(),
+    });
+    $("#conCodice").open = false;
+  } else {
+    porta.innerHTML = '<h2>Entra nella squadra</h2><p class="aiuto" style="text-align:left">Il codice lo ha Dario. Il nome serve a sapere chi era allo stand.</p>';
+    $("#conCodice").open = true;
+  }
+  document.body.classList.remove("in-porta");
 }
 
 async function avvia() {
+  document.body.classList.remove("in-porta");
+  if (!fiera) { fiera = fieraDiOggi(); scrivi("fiera", fiera); }
   $("#entra").classList.add("nascosto"); $("#app").classList.remove("nascosto"); $("#piede").classList.remove("nascosto");
   $("#setChi").value = chi; $("#setFiera").value = fiera; $("#titoloFiera").textContent = fiera ? "· " + fiera : "";
   nuovo(); disegna();
   try {
     const s = await api("api/stato");
     servizio = s;
-    if (!s.entrato) { codice = ""; scrivi("codice", ""); mostraEntra(); $("#statoEntra").textContent = "Il codice è cambiato: rimettilo."; return; }
+    if (!s.entrato) { codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null); return mostraEntra("L'accesso è scaduto: rientra."); }
+    utente = s.utente; scrivi("utente", utente);
+    if (utente.via === "google" && utente.nome) { chi = utente.nome; scrivi("chi", chi); $("#setChi").value = chi; }
   } catch {}
+  $("#setChi").disabled = utente && utente.via === "google";
+  $("#chiSono").textContent = utente && utente.via === "google" ? `Sei entrato come ${utente.email}` : "Sei entrato con il codice";
   $("#btFoto").classList.toggle("nascosto", !servizio.ia);
   $("#versione").textContent = `versione ${VERSIONE}` + (servizio.ia ? " · IA attiva" : " · riconoscimento sul telefono");
+  $("#zonaAmmessi").classList.toggle("nascosto", !(utente && utente.admin));
+  if (utente && utente.admin) caricaAmmessi();
   sincronizza();
 }
+
+// ---------- Chi può entrare (solo amministratori) ----------
+async function caricaAmmessi(r) {
+  try {
+    const j = r || await api("api/ammessi");
+    const ul = $("#ammessi"); ul.textContent = "";
+    for (const e of j.amministratori) { const li = document.createElement("li"); li.textContent = e + " · amministratore"; ul.append(li); }
+    for (const a of j.ammessi) {
+      const li = document.createElement("li"); const t = document.createElement("span"); t.textContent = a.email;
+      const b = document.createElement("button"); b.className = "piccolo"; b.textContent = "Togli";
+      b.addEventListener("click", async () => caricaAmmessi(await api("api/ammessi?email=" + encodeURIComponent(a.email), { method: "DELETE" })));
+      li.append(t, b); ul.append(li);
+    }
+  } catch (e) { avviso("Elenco della squadra: " + e.message, "err"); }
+}
+$("#btAmmetti").addEventListener("click", async () => {
+  const email = $("#nuovoAmmesso").value.trim(); if (!email) return;
+  try { caricaAmmessi(await api("api/ammessi", { method: "POST", body: JSON.stringify({ email }) })); $("#nuovoAmmesso").value = ""; }
+  catch (e) { avviso(e.message, "err"); }
+});
 
 // ---------- Comuni (per il riconoscitore e la tendina) ----------
 fetch("comuni.json").then((r) => r.json()).then((l) => {
@@ -355,17 +422,21 @@ function rimpicciolisci(file, lato) {
 }
 
 // ---------- Salvare ----------
+const oggiISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 function nuovo() {
   corrente = null; toccati = new Set(); giroIA++;
   for (const el of document.querySelectorAll("[data-k]")) { el.value = ""; el.classList.remove("ia"); }
-  const d = new Date(); campo("data").value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  campo("data").value = oggiISO();
   $("#testo").value = ""; $("#titoloScheda").textContent = "Nuovo contatto"; $("#btSalva").textContent = "Salva contatto";
 }
 $("#btNuovo").addEventListener("click", () => { nuovo(); avviso(""); });
 
-$("#btSalva").addEventListener("click", () => {
+function schedaPiena() { const s = leggiScheda(); return !!(s.nome || s.cognome || s.email || s.telefono); }
+$("#btSalva").addEventListener("click", salva);
+function salva() {
   if (registra) ferma();
   const s = leggiScheda();
+  if (!toccati.has("data")) s.data = oggiISO(); // la data e' quella del giorno in cui si salva
   if (!s.nome && !s.cognome && !s.email && !s.telefono) { avviso("Manca almeno un nome, un'email o un telefono.", "err"); return; }
   const vecchio = corrente && tutti().find((c) => c.id === corrente);
   const c = { ...(vecchio || {}), ...s, id: corrente || uuid(), fiera: (vecchio && vecchio.fiera) || fiera,
@@ -375,7 +446,7 @@ $("#btSalva").addEventListener("click", () => {
   nuovo(); disegna();
   avviso(`Salvato: ${nome}.` + (navigator.onLine ? "" : " Lo mando appena torna la rete."), "ok");
   sincronizza();
-});
+}
 
 let inViaggio = false;
 async function sincronizza() {
@@ -395,7 +466,7 @@ async function sincronizza() {
     contatti = l; scrivi("contatti", contatti);
     rete(true);
   } catch (e) {
-    if (e.stato === 401) { codice = ""; scrivi("codice", ""); mostraEntra(); $("#statoEntra").textContent = "Il codice non va più bene: rimettilo."; }
+    if (e.stato === 401) { codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null); mostraEntra("L'accesso è scaduto: rientra."); }
     else rete(navigator.onLine && !(e instanceof TypeError));
   } finally { inViaggio = false; disegna(); }
 }
@@ -468,6 +539,7 @@ function caricaXLSX() {
 }
 $("#btExcel").addEventListener("click", async () => {
   try {
+    if (schedaPiena()) salva(); // un contatto compilato e non ancora salvato finisce anche nell'Excel
     const XLSX = await caricaXLSX();
     const l = filtrati().slice().reverse();
     const daData = (d) => { if (!d) return ""; const [a, m, g] = d.split("-").map(Number); return new Date(a, m - 1, g, 12); };
@@ -488,12 +560,25 @@ $("#btExcel").addEventListener("click", async () => {
 // ---------- Impostazioni ----------
 $("#setChi").addEventListener("change", () => { chi = $("#setChi").value.trim(); scrivi("chi", chi); });
 $("#setFiera").addEventListener("change", () => { fiera = $("#setFiera").value.trim(); scrivi("fiera", fiera); $("#titoloFiera").textContent = fiera ? "· " + fiera : ""; });
-$("#btEsci").addEventListener("click", () => { codice = ""; scrivi("codice", ""); mostraEntra(); });
-$("#btEntra").addEventListener("click", entra);
-$("#inCodice").addEventListener("keydown", (e) => { if (e.key === "Enter") entra(); });
+$("#btEsci").addEventListener("click", async () => {
+  codice = ""; scrivi("codice", ""); utente = null; scrivi("utente", null);
+  try { await fetch("api/entra", { method: "DELETE" }); } catch {}
+  mostraEntra();
+});
+$("#btEntra").addEventListener("click", entraConCodice);
+$("#inCodice").addEventListener("keydown", (e) => { if (e.key === "Enter") entraConCodice(); });
 
 rete(navigator.onLine);
-if (codice && chi) avvia(); else mostraEntra();
+// All'apertura: chi e' gia' entrato (cookie o codice) va dritto ai contatti; senza rete pure.
+(async () => {
+  try {
+    servizio = await api("api/stato");
+    if (servizio.entrato) { utente = servizio.utente; return avvia(); }
+    mostraEntra();
+  } catch {
+    if ((codice && chi) || utente) avvia(); else mostraEntra("Serve la rete per entrare la prima volta.");
+  }
+})();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>

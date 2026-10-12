@@ -1,12 +1,12 @@
 // contatti-fiera/api/contatti.js
-// version: 0.1.0
+// version: 0.2.0
 //
 // I contatti della squadra. GET: tutti (piu' recenti prima). POST: uno o piu'
 // contatti, salvati per id (rimandarli non duplica: e' la coda del telefono
 // che si svuota quando torna la rete). DELETE ?id=: lo nasconde.
 
 import * as db from "../lib/db.js";
-import { autorizzato, corpo, risposta } from "../lib/porta.js";
+import { chi, corpo, risposta } from "../lib/porta.js";
 
 const COLONNE = ["data_contatto", "nome", "cognome", "ruolo", "comune", "provincia", "email", "telefono",
   "interesse", "note", "fiera", "registrato_da", "trascrizione"];
@@ -28,7 +28,8 @@ export function riga(c) {
 }
 
 export default async function handler(req, res) {
-  if (!autorizzato(req)) return risposta(res, 401, { errore: "codice della squadra mancante o sbagliato" });
+  const io = await chi(req);
+  if (!io) return risposta(res, 401, { errore: "non sei entrato" });
   if (!db.configurato()) return risposta(res, 503, { errore: "database non collegato" });
   try {
     await db.preparaSchema();
@@ -43,6 +44,8 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const b = await corpo(req);
       const lista = (Array.isArray(b.contatti) ? b.contatti : [b]).slice(0, 200).map(riga);
+      // Chi registra lo dice l'accesso Google, quando c'e'.
+      if (io.via === "google") for (const c of lista) if (!c.registrato_da || c.registrato_da === io.email) c.registrato_da = io.nome;
       for (const c of lista) {
         const valori = [c.id, ...COLONNE.map((k) => c[k])];
         await db.query(
