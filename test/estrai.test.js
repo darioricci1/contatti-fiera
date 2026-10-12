@@ -1,5 +1,5 @@
 // contatti-fiera/test/estrai.test.js
-// version: 0.1.1
+// version: 0.2.0
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -42,6 +42,17 @@ test("parole guida dentro l'email", () => {
   const r = estrai("Mario Rossi, ispettore del comune di Forlì, email mario punto rossi chiocciola comune punto forli punto fc punto it, numero 333 123 4567", D);
   assert.equal(r.email, "mario.rossi@comune.forli.fc.it");
   assert.equal(r.comune, "Forlì"); assert.equal(r.telefono, "333 123 4567");
+});
+
+test("provincia detta per nome", () => {
+  let r = estrai("Mi chiamo Dario, cognome Ricci. Comune Forlì provincia Forlì Cesena, email dario.ricci@gmail.com, telefono 347 389 5071", D);
+  assert.deepEqual([r.nome, r.cognome, r.comune, r.provincia], ["Dario", "Ricci", "Forlì", "FC"]);
+  r = estrai("nome Dario cognome Ricci. Forlì provincia di Forlì-Cesena", D);
+  assert.deepEqual([r.nome, r.cognome, r.comune, r.provincia], ["Dario", "Ricci", "Forlì", "FC"]);
+  r = estrai("Paolo Verdi agente di Bertinoro provincia effe ci", D);
+  assert.deepEqual([r.comune, r.provincia], ["Bertinoro", "FC"]);
+  r = estrai("Anna Neri comune Cesena provincia Forlì", D);
+  assert.deepEqual([r.comune, r.provincia], ["Cesena", "FC"]);
 });
 
 test("pezzi", () => {

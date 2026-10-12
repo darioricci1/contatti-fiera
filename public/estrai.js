@@ -1,5 +1,5 @@
 // contatti-fiera/public/estrai.js
-// version: 0.1.1
+// version: 0.2.0
 //
 // Dal parlato ai campi del foglio «Contatti fiera». Funziona senza rete e
 // senza IA: cerca le parole guida (nome, cognome, ruolo, comune, email,
@@ -45,6 +45,7 @@ const GUIDE = [
   ["email", /\b(?:indirizzo )?(?:e-?mail|mail|posta elettronica)\b/g],
   ["telefono", /\b(?:numero di telefono|telefono|tel|cellulare|cell|numero|recapito telefonico)\b/g],
   ["interesse", /\b(?:interessat[oaie]|interesse|interessa(?:no)?|vuole vedere|cerca)\b/g],
+  ["provincia", /\b(?:provincia|prov)\b/g],
   ["note", /\b(?:note|nota|appunti)\b/g],
 ];
 
@@ -53,6 +54,41 @@ const NON_COMUNI = new Set(["ora", "lei", "ne", "re", "ala", "rio", "bra", "uri"
   "nome", "orta", "piazza", "valle", "monte", "castello", "porto", "san", "santa", "villa", "campo", "fiume", "lago",
   "isola", "chiesa", "torre", "ponte", "colle", "costa", "riva", "sale", "calendario", "mercato", "salto", "vasto",
   "buono", "pace", "massa", "carrara", "nove", "dieci", "trenta", "cento", "mille", "vita", "lu", "po", "lavoro"]);
+
+// Le province con la sigla, e i modi in cui si dicono a voce.
+const PROVINCE = [["Agrigento","AG"],["Alessandria","AL"],["Ancona","AN"],["Arezzo","AR"],["Ascoli Piceno","AP"],["Asti","AT"],
+  ["Avellino","AV"],["Bari","BA"],["Barletta Andria Trani","BT"],["Barletta","BT"],["Belluno","BL"],["Benevento","BN"],["Bergamo","BG"],
+  ["Biella","BI"],["Bologna","BO"],["Bolzano","BZ"],["Alto Adige","BZ"],["Brescia","BS"],["Brindisi","BR"],["Cagliari","CA"],
+  ["Caltanissetta","CL"],["Campobasso","CB"],["Caserta","CE"],["Catania","CT"],["Catanzaro","CZ"],["Chieti","CH"],["Como","CO"],
+  ["Cosenza","CS"],["Cremona","CR"],["Crotone","KR"],["Cuneo","CN"],["Enna","EN"],["Fermo","FM"],["Ferrara","FE"],["Firenze","FI"],
+  ["Foggia","FG"],["Forli Cesena","FC"],["Forli","FC"],["Cesena","FC"],["Frosinone","FR"],["Genova","GE"],["Gorizia","GO"],
+  ["Grosseto","GR"],["Imperia","IM"],["Isernia","IS"],["L'Aquila","AQ"],["Aquila","AQ"],["La Spezia","SP"],["Spezia","SP"],
+  ["Latina","LT"],["Lecce","LE"],["Lecco","LC"],["Livorno","LI"],["Lodi","LO"],["Lucca","LU"],["Macerata","MC"],["Mantova","MN"],
+  ["Massa Carrara","MS"],["Massa","MS"],["Matera","MT"],["Messina","ME"],["Milano","MI"],["Modena","MO"],
+  ["Monza e della Brianza","MB"],["Monza e Brianza","MB"],["Monza Brianza","MB"],["Monza","MB"],["Napoli","NA"],["Novara","NO"],
+  ["Nuoro","NU"],["Oristano","OR"],["Padova","PD"],["Palermo","PA"],["Parma","PR"],["Pavia","PV"],["Perugia","PG"],
+  ["Pesaro e Urbino","PU"],["Pesaro Urbino","PU"],["Pesaro","PU"],["Pescara","PE"],["Piacenza","PC"],["Pisa","PI"],["Pistoia","PT"],
+  ["Pordenone","PN"],["Potenza","PZ"],["Prato","PO"],["Ragusa","RG"],["Ravenna","RA"],["Reggio Calabria","RC"],
+  ["Reggio nell'Emilia","RE"],["Reggio Emilia","RE"],["Rieti","RI"],["Rimini","RN"],["Roma","RM"],["Rovigo","RO"],["Salerno","SA"],
+  ["Sassari","SS"],["Savona","SV"],["Siena","SI"],["Siracusa","SR"],["Sondrio","SO"],["Sud Sardegna","SU"],["Taranto","TA"],
+  ["Teramo","TE"],["Terni","TR"],["Torino","TO"],["Trapani","TP"],["Trento","TN"],["Treviso","TV"],["Trieste","TS"],["Udine","UD"],
+  ["Valle d'Aosta","AO"],["Aosta","AO"],["Varese","VA"],["Venezia","VE"],["Verbano Cusio Ossola","VB"],["Verbania","VB"],
+  ["Vercelli","VC"],["Verona","VR"],["Vibo Valentia","VV"],["Vicenza","VI"],["Viterbo","VT"]]
+  .map(([n, s]) => [n.toLowerCase().replace(/[^a-z' ]/g, " ").replace(/\s+/g, " "), s])
+  .sort((a, b) => b[0].length - a[0].length);
+const SIGLE = new Set(PROVINCE.map(([, s]) => s));
+
+/** «Forlì Cesena», «provincia di Forlì», «FC», «effe ci» -> «FC». */
+export function provinciaDaVoce(s) {
+  const b = " " + minuscolo(s).replace(/[-/]/g, " ").replace(/[^a-z' ]/g, " ").replace(/\s+/g, " ").trim() + " ";
+  for (const [n, sigla] of PROVINCE) if (b.includes(" " + n + " ")) return sigla;
+  const lettere = b.replace(/\b(?:di|della|del|la|e)\b/g, " ").trim().replace(/\s+/g, " ");
+  const sillabe = { a: "A", bi: "B", ci: "C", di: "D", e: "E", effe: "F", gi: "G", acca: "H", i: "I", elle: "L", emme: "M",
+    enne: "N", o: "O", pi: "P", qu: "Q", erre: "R", esse: "S", ti: "T", u: "U", vu: "V", vi: "V", zeta: "Z", cappa: "K" };
+  const sigla = lettere.length === 2 ? lettere.toUpperCase()
+    : lettere.split(" ").map((x) => sillabe[x] || "?").join("");
+  return SIGLE.has(sigla) ? sigla : "";
+}
 
 const PAROLE_NUMERO = { zero: "0", uno: "1", due: "2", tre: "3", quattro: "4", cinque: "5", sei: "6",
   sette: "7", otto: "8", nove: "9" };
@@ -188,7 +224,7 @@ function interesseDa(s) {
   return primaMaiuscola(pulisci(s));
 }
 
-const ATTACCHI = /^(?:ho parlato con|abbiamo parlato con|parlato con|nuovo contatto|contatto|si chiama|lui e|lei e|e|sono|allora|ok|dunque|il signor|la signora|il signore|signor|signora|il dottor|la dottoressa|dottor|dottoressa|dott|il comandante|la comandante)\b[\s,.:]*/i;
+const ATTACCHI = /^(?:mi chiamo|il mio nome e|si chiama|chiamato|chiamata|ho parlato con|abbiamo parlato con|parlato con|nuovo contatto|contatto|si chiama|lui e|lei e|e|sono|allora|ok|dunque|il signor|la signora|il signore|signor|signora|il dottor|la dottoressa|dottor|dottoressa|dott|il comandante|la comandante)\b[\s,.:]*/i;
 
 /** Nome e cognome dalla testa della frase («Carlo De Vitis, vice comandante di ...»). */
 function personaDaTesta(testa) {
@@ -224,25 +260,29 @@ export function estrai(testo, { data } = {}) {
 
   // Persona
   if (s.nome != null) {
-    const p = pulisci(s.nome).split(/[,;]/)[0].trim().split(/\s+/);
+    const p = pulisci(s.nome).split(/[,;.]/)[0].trim().split(/\s+/).filter(Boolean);
     if (s.cognome != null) r.nome = maiuscole(p.slice(0, 2).join(" ")); else { r.nome = maiuscole(p[0] || ""); r.cognome = maiuscole(p.slice(1, 4).join(" ")); }
   }
-  if (s.cognome != null) r.cognome = maiuscole(pulisci(s.cognome).split(/[,;]/)[0].trim().split(/\s+/).slice(0, 3).join(" "));
+  if (s.cognome != null) r.cognome = maiuscole(pulisci(s.cognome).split(/[,;.]/)[0].trim().split(/\s+/).slice(0, 3).join(" "));
   if (!r.nome && !r.cognome) Object.assign(r, personaDaTesta(s.testa));
+  else if (!r.nome) { const p = personaDaTesta(s.testa); r.nome = [p.nome, p.cognome].filter(Boolean).join(" "); }
 
   // Ruolo
   if (s.ruolo != null) { const k = ruoloIn(s.ruolo); r.ruolo = k ? k.ruolo : primaMaiuscola(pulisci(s.ruolo)); }
   if (!r.ruolo) { const k = ruoloIn(testo); if (k) r.ruolo = k.ruolo; }
 
-  // Comune
+  // Comune e provincia. Il nome della provincia non vale come comune («Forlì Cesena» non e' Cesena).
+  const provDetta = s.provincia != null ? provinciaDaVoce(pulisci(s.provincia).split(/[,;.]/)[0]) : "";
+  const senzaProv = s.provincia != null ? testo.replace(s.provincia, " ") : testo;
   let c = null;
   if (s.comune != null) c = comuneIn(pulisci(s.comune), { inTesta: true }) || comuneIn(s.comune);
   if (!c) {
-    const dopo = minuscolo(testo).match(/\b(?:comune di|citta di|polizia locale di|municipale di|comando di|di|da|del comune di)\s+([a-z' ]{2,40})/g) || [];
+    const dopo = minuscolo(senzaProv).match(/\b(?:comune di|citta di|polizia locale di|municipale di|comando di|di|da|del comune di)\s+([a-z' ]{2,40})/g) || [];
     for (const d of dopo) { c = comuneIn(d.replace(/^\S+(?:\s+(?:di|locale di|di))?\s+/, "").replace(/^(?:comune di|di|locale di)\s+/, ""), { inTesta: true }); if (c && !NON_COMUNI.has(c.chiave)) break; c = null; }
   }
-  if (!c) c = comuneIn(testo.replace(new RegExp(`\\b${r.nome}\\b|\\b${r.cognome}\\b`, "gi"), " "));
-  if (c) { r.comune = c.nome; r.provincia = c.sigla; } else if (s.comune != null) r.comune = maiuscole(pulisci(s.comune).split(/[,;]/)[0]);
+  if (!c) c = comuneIn(senzaProv.replace(new RegExp(`\\b${r.nome}\\b|\\b${r.cognome}\\b`, "gi"), " "));
+  if (c) { r.comune = c.nome; r.provincia = c.sigla; } else if (s.comune != null) r.comune = maiuscole(pulisci(s.comune).split(/[,;.]/)[0]);
+  if (provDetta) r.provincia = provDetta;
 
   // Email e telefono
   if (s.email != null) r.email = emailDaVoce(pulisci(s.email.split(/[,;]/)[0])) || emailDaVoce(pulisci(s.email));

@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.1.0 -->
+<!-- version: 0.2.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -19,6 +19,10 @@ Meglio con le parole guida, in qualunque ordine:
 > «Carlo De Vitis, vice comandante, comune di Fara San Martino, email carlo
 > punto devitis chiocciola fsm punto it, telefono 333 313 2729, interessato
 > alla Multi Video Trappola, note richiamare a novembre»
+
+La provincia si può dire per nome («provincia Forlì Cesena») o per sigla
+(«provincia FC», «effe ci»): nel foglio va la sigla. Se non la si dice, la
+prende dal comune.
 
 Funziona anche il parlato libero («ho parlato con Laura Adami, comandante
 della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
