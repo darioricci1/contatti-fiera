@@ -49,10 +49,9 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
 
 ## Variabili del progetto Vercel `contatti-fiera`
 
-- `GOOGLE_CLIENT_ID_ACCESSO`: il client Google dell'accesso (lo stesso della
-  Mappa del vino e del quaderno). Nella Google Cloud Console, alla voce
-  «Origini JavaScript autorizzate» di quel client, ci dev'essere
-  `https://contatti-fiera.vercel.app`.
+- `GOOGLE_CLIENT_ID_ACCESSO`: il client Google dell'accesso, «contatti fiera»
+  nel progetto Google AlmaSicurezza (`64260446108-4ne0q…`). Nelle sue «Origini
+  JavaScript autorizzate» c'è `https://contatti-fiera.vercel.app`.
 - `SESSIONE_SEGRETO`, `NOME_COOKIE`: la firma del cookie d'accesso.
 - `FIERA_AMMINISTRATORI`: gli indirizzi di chi gestisce la squadra.
 - `FIERA_DOMINI`: i domini che entrano tutti (`almasicurezza.it`).
