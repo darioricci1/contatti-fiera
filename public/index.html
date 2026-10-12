@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it">
 <head>
-<!-- contatti-fiera/public/index.html · version: 0.5.0 -->
+<!-- contatti-fiera/public/index.html · version: 0.6.0 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f3d5e">
@@ -30,6 +30,19 @@ header{position:sticky;top:0;z-index:5;background:var(--blu);color:#fff;padding:
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) header{background:#0b2a40}}
 header h1{font-size:18px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 header small{opacity:.85;font-size:13px}
+.ingranaggio{background:transparent;border:none;color:#fff;min-height:40px;width:40px;padding:6px;display:flex;align-items:center;justify-content:center}
+.ingranaggio svg{width:24px;height:24px}
+#impostazioni{position:fixed;inset:0;z-index:20;background:var(--sfondo);overflow:auto;padding:0 0 30px}
+#impostazioni .testa{position:sticky;top:0;background:var(--blu);color:#fff;display:flex;align-items:center;gap:10px;
+  padding:10px 16px;padding-top:calc(10px + env(safe-area-inset-top))}
+#impostazioni .testa h1{font-size:18px;margin:0;flex:1}
+#impostazioni .dentro{max-width:720px;margin:0 auto;padding:14px 16px}
+.chiudi{background:transparent;border:none;color:#fff;font-size:26px;line-height:1;min-height:40px;width:40px;padding:0}
+.fiere li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bordo);font-size:14px}
+.fiere li:first-child{border-top:none}
+.lista .fiere .oggi,.fiere .oggi{display:inline;font-size:11px;background:var(--giallo);border:1px solid var(--giallo-b);border-radius:99px;padding:1px 7px;margin-left:6px}
+.filtri{display:flex;gap:8px;margin-bottom:8px}
+.filtri select{flex:0 0 42%}
 .rete{font-size:12px;padding:3px 8px;border-radius:99px;background:rgba(255,255,255,.18)}
 .rete.no{background:#b23b3b}
 main{max-width:720px;margin:0 auto;padding:14px 16px 90px}
@@ -85,6 +98,9 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <header>
   <h1>Contatti fiera <small id="titoloFiera"></small></h1>
   <span class="rete" id="rete">in linea</span>
+  <button class="ingranaggio nascosto" id="btImpostazioni" aria-label="Impostazioni" title="Impostazioni">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 .05-.94 7.07 7.07 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.6.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.22.08.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+  </button>
 </header>
 
 <main>
@@ -130,29 +146,51 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 
     <section class="carta">
       <h2 id="titoloLista">Contatti</h2>
-      <input class="cerca" id="cerca" type="search" placeholder="Cerca per nome, comune, interesse…">
+      <div class="filtri">
+        <select id="filtroFiera" aria-label="Fiera"><option value="*">Tutte le fiere</option></select>
+        <input class="cerca" id="cerca" type="search" placeholder="Cerca…" style="margin:0">
+      </div>
       <ul class="lista" id="lista"></ul>
     </section>
 
-    <section class="carta">
-      <h2>Impostazioni</h2>
-      <div class="campi" style="margin-top:0">
-        <label>Il tuo nome<input id="setChi"></label>
-        <label>Fiera<input id="setFiera"></label>
-      </div>
-      <div id="zonaAmmessi" class="nascosto" style="margin-top:14px">
-        <h2>Chi può entrare con Google</h2>
-        <ul class="lista ammessi" id="ammessi"></ul>
-        <div class="riga" style="margin-top:8px;flex-wrap:nowrap">
-          <input id="nuovoAmmesso" type="email" placeholder="email Google del collega" autocapitalize="none">
-          <button id="btAmmetti">Aggiungi</button>
-        </div>
-      </div>
-      <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button> <span class="aiuto" id="chiSono"></span></div>
-      <div class="versione" id="versione">versione 0.5.0</div>
-    </section>
   </div>
 </main>
+
+<div id="impostazioni" class="nascosto" role="dialog" aria-label="Impostazioni">
+  <div class="testa"><h1>Impostazioni</h1><button class="chiudi" id="btChiudiImp" aria-label="Chiudi">×</button></div>
+  <div class="dentro">
+    <section class="carta">
+      <h2>Chi sei</h2>
+      <p id="chiSono" style="margin:0"></p>
+      <p class="aiuto" style="text-align:left;margin:6px 0 0">I contatti che salvi portano questo nome. Viene dal tuo account Google.</p>
+      <div class="riga" style="margin-top:10px"><button id="btEsci">Esci</button></div>
+    </section>
+    <section class="carta">
+      <h2>Calendario delle fiere</h2>
+      <p class="aiuto" style="text-align:left;margin:0 0 8px">Un contatto salvato in un giorno di fiera va da solo in quella fiera.</p>
+      <ul class="lista fiere" id="fiere"></ul>
+      <div id="zonaNuovaFiera" class="nascosto">
+        <div class="campi">
+          <label class="largo">Nome della fiera<input id="fNome" placeholder="es. Expo Polizia Locale Riccione"></label>
+          <label class="largo">Luogo<input id="fLuogo" placeholder="es. Riccione"></label>
+          <label>Dal<input id="fDal" type="date"></label>
+          <label>Al<input id="fAl" type="date"></label>
+        </div>
+        <div class="riga" style="margin-top:10px"><button class="pieno" id="btFiera">Aggiungi fiera</button></div>
+      </div>
+      <div class="stato" id="statoFiere"></div>
+    </section>
+    <section class="carta nascosto" id="zonaAmmessi">
+      <h2>Chi può entrare con Google</h2>
+      <ul class="lista ammessi" id="ammessi"></ul>
+      <div class="riga" style="margin-top:8px;flex-wrap:nowrap">
+        <input id="nuovoAmmesso" type="email" placeholder="email Google del collega" autocapitalize="none">
+        <button id="btAmmetti">Aggiungi</button>
+      </div>
+    </section>
+    <div class="versione" id="versione">versione 0.6.0</div>
+  </div>
+</div>
 
 <div class="piede nascosto" id="piede">
   <button class="pieno" id="btExcel">Scarica Excel</button>
@@ -173,12 +211,13 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--blu2);outline-of
 <script type="module">
 import { estrai, caricaComuni, CAMPI, INTESTAZIONI, formattaTelefono, provinciaDaVoce } from "./estrai.js";
 
-const VERSIONE = "0.5.0";
+const VERSIONE = "0.6.0";
 const $ = (s) => document.querySelector(s);
 const leggi = (k, d) => { try { const v = localStorage.getItem("cf." + k); return v == null ? d : JSON.parse(v); } catch { return d; } };
 const scrivi = (k, v) => { try { localStorage.setItem("cf." + k, JSON.stringify(v)); } catch {} };
 
-let chi = leggi("chi", ""), fiera = leggi("fiera", "");
+let chi = leggi("chi", ""), fiere = leggi("fiere", []);
+try { localStorage.removeItem("cf.fiera"); } catch {}
 try { localStorage.removeItem("cf.codice"); } catch {}
 let contatti = leggi("contatti", []);   // l'ultima lista vista dal server
 let coda = leggi("coda", []);           // salvati qui e non ancora arrivati
@@ -202,7 +241,12 @@ function avviso(testo, tipo = "") { const s = $("#stato"); s.textContent = testo
 
 // ---------- Entrare ----------
 // Con Google: il cookie lo mette /api/entra.
-const fieraDiOggi = () => `Fiera ${new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" })}`;
+// La fiera di un giorno: quella del calendario che lo comprende (come lib/calendario.js).
+function fieraDelGiorno(giorno) {
+  const l = fiere.filter((e) => e.dal <= giorno && giorno <= e.al);
+  l.sort((a, b) => (Date.parse(a.al) - Date.parse(a.dal)) - (Date.parse(b.al) - Date.parse(b.dal)) || b.dal.localeCompare(a.dal));
+  return l[0] ? l[0].nome : "";
+}
 
 function mostraEntra(motivo = "") {
   $("#entra").classList.remove("nascosto"); $("#app").classList.add("nascosto"); $("#piede").classList.add("nascosto");
@@ -228,22 +272,22 @@ function mostraEntra(motivo = "") {
 
 async function avvia() {
   document.body.classList.remove("in-porta");
-  if (!fiera) { fiera = fieraDiOggi(); scrivi("fiera", fiera); }
   $("#entra").classList.add("nascosto"); $("#app").classList.remove("nascosto"); $("#piede").classList.remove("nascosto");
-  $("#setChi").value = chi; $("#setFiera").value = fiera; $("#titoloFiera").textContent = fiera ? "· " + fiera : "";
+  $("#btImpostazioni").classList.remove("nascosto"); disegnaFiere();
   nuovo(); disegna();
   try {
     const s = await api("api/stato");
     servizio = s;
     if (!s.entrato) { utente = null; scrivi("utente", null); return mostraEntra("L'accesso è scaduto: rientra."); }
     utente = s.utente; scrivi("utente", utente);
-    if (utente.via === "google" && utente.nome) { chi = utente.nome; scrivi("chi", chi); $("#setChi").value = chi; }
+    chi = utente.nome || utente.email; scrivi("chi", chi);
   } catch {}
-  $("#setChi").disabled = utente && utente.via === "google";
-  $("#chiSono").textContent = utente && utente.via === "google" ? `Sei entrato come ${utente.email}` : "";
+  $("#chiSono").textContent = utente ? (utente.nome && utente.nome !== utente.email ? `${utente.nome} · ${utente.email}` : utente.email) : "";
   $("#btFoto").classList.toggle("nascosto", !servizio.ia);
   $("#versione").textContent = `versione ${VERSIONE}` + (servizio.ia ? " · IA attiva" : " · riconoscimento sul telefono");
   $("#zonaAmmessi").classList.toggle("nascosto", !(utente && utente.admin));
+  $("#zonaNuovaFiera").classList.toggle("nascosto", !(utente && utente.admin));
+  caricaFiere();
   if (utente && utente.admin) caricaAmmessi();
   sincronizza();
 }
@@ -414,7 +458,7 @@ function salva() {
   if (!toccati.has("data")) s.data = oggiISO(); // la data e' quella del giorno in cui si salva
   if (!s.nome && !s.cognome && !s.email && !s.telefono) { avviso("Manca almeno un nome, un'email o un telefono.", "err"); return; }
   const vecchio = corrente && tutti().find((c) => c.id === corrente);
-  const c = { ...(vecchio || {}), ...s, id: corrente || uuid(), fiera: (vecchio && vecchio.fiera) || fiera,
+  const c = { ...(vecchio || {}), ...s, id: corrente || uuid(), fiera: fieraDelGiorno(s.data),
     registrato_da: (vecchio && vecchio.registrato_da) || chi, trascrizione: $("#testo").value.trim() || (vecchio && vecchio.trascrizione) || "" };
   coda = coda.filter((x) => x.id !== c.id).concat([c]); scrivi("coda", coda);
   const nome = [c.nome, c.cognome].filter(Boolean).join(" ") || c.email;
@@ -459,8 +503,9 @@ function tutti() {
   return l.sort((a, b) => String(b.data).localeCompare(String(a.data)) || String(b.creato_il || "~").localeCompare(String(a.creato_il || "~")));
 }
 function filtrati() {
-  const q = $("#cerca").value.trim().toLowerCase();
-  const l = tutti();
+  const q = $("#cerca").value.trim().toLowerCase(), f = $("#filtroFiera").value;
+  let l = tutti();
+  if (f !== "*") l = l.filter((c) => (c.fiera || "") === f);
   if (!q) return l;
   return l.filter((c) => [c.nome, c.cognome, c.ruolo, c.comune, c.email, c.telefono, c.interesse, c.fiera, c.registrato_da, c.note].join(" ").toLowerCase().includes(q));
 }
@@ -476,7 +521,7 @@ function disegna() {
     if (c._coda) { const q = document.createElement("span"); q.className = "coda"; q.textContent = "da inviare"; q.style.display = "inline"; b.append(q); }
     const s1 = document.createElement("span"); s1.textContent = [c.ruolo, c.comune && (c.comune + (c.provincia ? ` (${c.provincia})` : ""))].filter(Boolean).join(" · ");
     const s2 = document.createElement("span"); s2.textContent = [c.email, c.telefono].filter(Boolean).join(" · ");
-    const s3 = document.createElement("span"); s3.textContent = [c.interesse, dataIt(c.data), c.registrato_da && "da " + c.registrato_da].filter(Boolean).join(" · ");
+    const s3 = document.createElement("span"); s3.textContent = [c.interesse, dataIt(c.data), c.fiera, c.registrato_da && "da " + c.registrato_da].filter(Boolean).join(" · ");
     d.append(b, s1, s2, s3);
     const ap = document.createElement("button"); ap.className = "piccolo"; ap.textContent = "Apri";
     ap.addEventListener("click", () => apri(c));
@@ -502,6 +547,7 @@ function cancella(id) {
   disegna(); sincronizza();
 }
 $("#cerca").addEventListener("input", disegna);
+$("#filtroFiera").addEventListener("change", disegna);
 
 // ---------- Excel, con le colonne del foglio «Contatti fiera» ----------
 function caricaXLSX() {
@@ -528,15 +574,68 @@ $("#btExcel").addEventListener("click", async () => {
     XLSX.utils.book_append_sheet(wb, ws, "Contatti fiera");
     XLSX.utils.book_append_sheet(wb, det, "Dettagli");
     const mese = new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" }).replace(" ", "_");
-    XLSX.writeFile(wb, `contatti_fiera_${mese}.xlsx`);
+    const f = $("#filtroFiera").value;
+    const nomeFile = f !== "*" && f ? "contatti_" + f.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") : `contatti_fiera_${mese}`;
+    XLSX.writeFile(wb, `${nomeFile}.xlsx`);
   } catch (e) { avviso(e.message, "err"); }
 });
 
 // ---------- Impostazioni ----------
-$("#setChi").addEventListener("change", () => { chi = $("#setChi").value.trim(); scrivi("chi", chi); });
-$("#setFiera").addEventListener("change", () => { fiera = $("#setFiera").value.trim(); scrivi("fiera", fiera); $("#titoloFiera").textContent = fiera ? "· " + fiera : ""; });
+$("#btImpostazioni").addEventListener("click", () => { $("#impostazioni").classList.remove("nascosto"); document.body.style.overflow = "hidden"; });
+$("#btChiudiImp").addEventListener("click", chiudiImpostazioni);
+addEventListener("keydown", (e) => { if (e.key === "Escape") chiudiImpostazioni(); });
+function chiudiImpostazioni() { $("#impostazioni").classList.add("nascosto"); document.body.style.overflow = ""; }
+
+// ---------- Calendario delle fiere ----------
+async function caricaFiere(r) {
+  try { const j = r || await api("api/fiere"); fiere = j.fiere; scrivi("fiere", fiere); }
+  catch (e) { if (e.stato) { $("#statoFiere").textContent = e.message; $("#statoFiere").className = "stato err"; } }
+  disegnaFiere(); disegna();
+}
+function disegnaFiere() {
+  const oggi = oggiISO(), corrente = fieraDelGiorno(oggi);
+  $("#titoloFiera").textContent = corrente ? "· " + corrente : "";
+  const ul = $("#fiere"); ul.textContent = "";
+  if (!fiere.length) { const li = document.createElement("li"); li.innerHTML = '<span class="aiuto">Nessuna fiera in calendario.</span>'; ul.append(li); }
+  for (const f of fiere) {
+    const li = document.createElement("li"); const t = document.createElement("span");
+    t.textContent = `${f.nome}${f.luogo ? " · " + f.luogo : ""} · ${dataIt(f.dal)}${f.al !== f.dal ? " – " + dataIt(f.al) : ""}`;
+    if (f.dal <= oggi && oggi <= f.al) { const o = document.createElement("span"); o.className = "oggi"; o.textContent = "oggi"; t.append(o); }
+    li.append(t);
+    if (utente && utente.admin) {
+      const b = document.createElement("button"); b.className = "piccolo"; b.textContent = "Togli";
+      b.addEventListener("click", async () => {
+        if (!b.dataset.sicuro) { b.dataset.sicuro = "1"; b.textContent = "Sicuro?"; return setTimeout(() => { b.dataset.sicuro = ""; b.textContent = "Togli"; }, 3000); }
+        try { await caricaFiere(await api("api/fiere?id=" + f.id, { method: "DELETE" })); sincronizza(); }
+        catch (e) { $("#statoFiere").textContent = e.message; $("#statoFiere").className = "stato err"; }
+      });
+      li.append(b);
+    }
+    ul.append(li);
+  }
+  // il filtro della lista: tutte, ogni fiera, senza fiera
+  const sel = $("#filtroFiera"), prima = sel.value;
+  sel.textContent = "";
+  for (const [v, t] of [["*", "Tutte le fiere"], ...fiere.map((f) => [f.nome, f.nome]), ["", "Senza fiera"]]) {
+    const o = document.createElement("option"); o.value = v; o.textContent = t; sel.append(o);
+  }
+  sel.value = [...sel.options].some((o) => o.value === prima) ? prima : "*";
+}
+$("#btFiera").addEventListener("click", async () => {
+  const nome = $("#fNome").value.trim(), luogo = $("#fLuogo").value.trim(), dal = $("#fDal").value, al = $("#fAl").value || dal;
+  const st = $("#statoFiere");
+  if (!nome || !dal) { st.textContent = "Servono il nome e il primo giorno della fiera."; st.className = "stato err"; return; }
+  try {
+    await caricaFiere(await api("api/fiere", { method: "POST", body: JSON.stringify({ nome, luogo, dal, al }) }));
+    $("#fNome").value = $("#fLuogo").value = $("#fDal").value = $("#fAl").value = "";
+    st.textContent = `Aggiunta: ${nome}. I contatti di quei giorni ora sono in questa fiera.`; st.className = "stato ok";
+    sincronizza();
+  } catch (e) { st.textContent = e.message; st.className = "stato err"; }
+});
+$("#fDal").addEventListener("change", () => { if (!$("#fAl").value || $("#fAl").value < $("#fDal").value) $("#fAl").value = $("#fDal").value; });
+
 $("#btEsci").addEventListener("click", async () => {
-  utente = null; scrivi("utente", null);
+  utente = null; scrivi("utente", null); chiudiImpostazioni(); $("#btImpostazioni").classList.add("nascosto");
   try { await fetch("api/entra", { method: "DELETE" }); } catch {}
   mostraEntra();
 });

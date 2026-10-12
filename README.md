@@ -1,6 +1,6 @@
 # Contatti fiera
 
-<!-- version: 0.5.0 -->
+<!-- version: 0.6.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
 appena conosciuto e la pagina compila da sola il foglio «Contatti fiera»
@@ -12,8 +12,11 @@ Si apre su https://contatti-fiera.vercel.app dal telefono (si può aggiungere
 alla schermata Home). Si entra con Google: gli amministratori
 (`FIERA_AMMINISTRATORI`), gli indirizzi di `FIERA_AMMESSI`, tutti quelli dei
 domini di `FIERA_DOMINI` (almasicurezza.it) e chi l'amministratore aggiunge in
-Impostazioni → «Chi può entrare con Google». Il nome della fiera si cambia in
-Impostazioni. La data del contatto è quella del giorno in cui si salva;
+Impostazioni (l'ingranaggio in alto a destra) → «Chi può entrare con Google».
+Il nome di chi registra viene da Google (o l'email, se Google non lo dà) e non
+si cambia. Nel **calendario delle fiere** (Impostazioni) l'amministratore mette
+nome, luogo e giorni di ogni fiera: un contatto salvato in uno di quei giorni
+va da solo in quella fiera, e la lista si filtra per fiera (anche l'Excel). La data del contatto è quella del giorno in cui si salva;
 «Scarica Excel» salva prima il contatto compilato e non ancora salvato.
 
 ## Come si detta
@@ -47,6 +50,8 @@ della polizia locale di Santa Margherita Ligure…»): ruoli, comuni italiani
   schema si crea o si aggiorna da solo alla prima chiamata.
 - `api/entra.js`, `api/ammessi.js`, `lib/google-id.js`, `lib/sessione.js`,
   `public/porta.js`: l'accesso con Google, copiato da `attrezzi/accesso-google`.
+- `api/fiere.js`, `lib/calendario.js`: il calendario delle fiere e
+  l'attribuzione dei contatti per giorno (tabella `fiera.evento`).
 - `api/stato.js`: cosa è acceso (database, IA, Google) e chi è entrato.
 - Senza rete la pagina si apre lo stesso (`sw.js`) e i contatti salvati
   restano sul telefono con «da inviare»; partono appena torna il segnale.

@@ -1,5 +1,5 @@
 // contatti-fiera/api/contatti.js
-// version: 0.2.0
+// version: 0.3.0
 //
 // I contatti della squadra. GET: tutti (piu' recenti prima). POST: uno o piu'
 // contatti, salvati per id (rimandarli non duplica: e' la coda del telefono
@@ -7,6 +7,7 @@
 
 import * as db from "../lib/db.js";
 import { chi, corpo, risposta } from "../lib/porta.js";
+import { SQL_FIERA_DEL_GIORNO } from "../lib/calendario.js";
 
 const COLONNE = ["data_contatto", "nome", "cognome", "ruolo", "comune", "provincia", "email", "telefono",
   "interesse", "note", "fiera", "registrato_da", "trascrizione"];
@@ -44,8 +45,13 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const b = await corpo(req);
       const lista = (Array.isArray(b.contatti) ? b.contatti : [b]).slice(0, 200).map(riga);
-      // Chi registra lo dice l'accesso Google, quando c'e'.
-      if (io.via === "google") for (const c of lista) if (!c.registrato_da || c.registrato_da === io.email) c.registrato_da = io.nome;
+      for (const c of lista) {
+        // Chi registra lo dice l'accesso Google (il nome, o l'email se Google non da' il nome).
+        if (!c.registrato_da) c.registrato_da = io.nome || io.email;
+        // La fiera la decide il calendario, dal giorno del contatto.
+        const [f] = await db.query(SQL_FIERA_DEL_GIORNO, [c.data_contatto]);
+        if (f) c.fiera = f.nome; else if (!c.fiera) c.fiera = "";
+      }
       for (const c of lista) {
         const valori = [c.id, ...COLONNE.map((k) => c[k])];
         await db.query(
