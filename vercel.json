@@ -1,6 +1,13 @@
 {
   "outputDirectory": "public",
   "functions": {
-    "api/estrai.js": { "maxDuration": 30 }
+    "api/estrai.js": {
+      "maxDuration": 30
+    }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "claude/**": false
+    }
   }
 }
