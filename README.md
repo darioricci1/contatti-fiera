@@ -1,5 +1,7 @@
 # Contatti fiera
 
+> Repository suo dal 28/10/2026 (prima era una cartella del monorepo dei progetti nuovi). Sito: https://contatti-fiera.vercel.app.
+
 <!-- version: 0.8.0 -->
 
 Allo stand di Alma Sicurezza: si tocca il microfono, si dice il contatto
